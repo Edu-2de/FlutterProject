@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'widgets/search_bar.dart';
 import 'widgets/horizontal_buttons.dart';
@@ -14,18 +16,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Alinha à esquerda
+          crossAxisAlignment: CrossAxisAlignment.start, 
           children: [
-            // Barra de pesquisa no topo
+     
             SearchBarWidget(
               onChanged: (query) {
-                // Aqui você pode filtrar sua lista de produtos, por exemplo
+                
                 print('Search query: $query');
               },
             ),
-            // Lista horizontal de botões logo abaixo da barra de pesquisa
+         
             const HorizontalButtonList(),
-            // O resto do seu conteúdo aqui
+           
             const Expanded(
               child: Center(child: Text('Product list goes here')),
             ),

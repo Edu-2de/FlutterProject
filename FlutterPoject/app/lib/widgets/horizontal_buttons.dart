@@ -15,9 +15,11 @@ class SquareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      
       onTap: onTap, 
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0), 
+        
+        margin: const EdgeInsets.symmetric(horizontal: 11.0, ), 
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey[300]!),
@@ -49,7 +51,8 @@ class HorizontalButtonList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+      margin: const EdgeInsets.only(top: 20), // Adiciona espaço no topo
       height: 56, 
       child: ListView(
         scrollDirection: Axis.horizontal, 
@@ -59,7 +62,6 @@ class HorizontalButtonList extends StatelessWidget {
           SquareButton(icon: Icons.history, label: 'Historic'),
           SquareButton(icon: Icons.person_outline, label: 'Following'),
           SquareButton(icon: Icons.receipt_long, label: 'Orders'),
-     
         ],
       ),
     );
