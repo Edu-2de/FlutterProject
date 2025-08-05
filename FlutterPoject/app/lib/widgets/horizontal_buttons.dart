@@ -11,30 +11,29 @@ class SquareButton extends StatelessWidget {
     required this.label,
     this.onTap,
   });
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      
-      onTap: onTap, 
+      onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 11.0, ), 
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 2.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           color: Colors.white,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.black),
+            Icon(icon, size: 20, color: Colors.black),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 color: Colors.black,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
               ),
             ),
           ],
@@ -44,18 +43,17 @@ class SquareButton extends StatelessWidget {
   }
 }
 
-
 class HorizontalButtonList extends StatelessWidget {
   const HorizontalButtonList({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 10), 
-      height: 56, 
+      margin: const EdgeInsets.only(top: 10),
+      height: 56,
       child: ListView(
-        scrollDirection: Axis.horizontal, 
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         children: const [
           SquareButton(icon: Icons.favorite_border, label: 'Favorites'),
           SquareButton(icon: Icons.history, label: 'Historic'),
