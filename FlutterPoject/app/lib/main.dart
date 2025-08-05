@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'widgets/search_bar.dart';
 import 'widgets/horizontal_buttons.dart';
+import 'widgets/banner_carousel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,6 +28,8 @@ class MyApp extends StatelessWidget {
             ),
          
             const HorizontalButtonList(),
+
+            const BannerCarousel(),
            
             const Expanded(
               child: Center(child: Text('Product list goes here')),
