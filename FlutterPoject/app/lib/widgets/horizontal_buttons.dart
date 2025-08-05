@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Widget de botão quadrado com ícone e texto
 class SquareButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -16,9 +15,9 @@ class SquareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap, // Ação ao tocar (opcional)
+      onTap: onTap, 
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0), // Espaço entre os botões
+        margin: const EdgeInsets.symmetric(horizontal: 8.0), 
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey[300]!),
@@ -44,7 +43,7 @@ class SquareButton extends StatelessWidget {
   }
 }
 
-// Widget principal com a lista horizontal
+
 class HorizontalButtonList extends StatelessWidget {
   const HorizontalButtonList({super.key});
 
