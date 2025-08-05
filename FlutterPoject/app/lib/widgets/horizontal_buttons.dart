@@ -51,15 +51,15 @@ class HorizontalButtonList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 56, // Altura dos botões
+      height: 56, 
       child: ListView(
-        scrollDirection: Axis.horizontal, // Permite rolar horizontalmente
+        scrollDirection: Axis.horizontal, 
         padding: const EdgeInsets.symmetric(horizontal: 12),
         children: const [
           SquareButton(icon: Icons.favorite_border, label: 'Favorites'),
           SquareButton(icon: Icons.history, label: 'Historic'),
           SquareButton(icon: Icons.person_outline, label: 'Following'),
-          SquareButton(icon: Icons.receipt_long, label: 'Pedidos'),
+          SquareButton(icon: Icons.receipt_long, label: 'Orders'),
      
         ],
       ),
