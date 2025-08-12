@@ -5,6 +5,11 @@ import pool from '../database/connection';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 export class AuthController {
   static login = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -87,6 +92,8 @@ export class AuthController {
         });
         return;
       }
+
+
     } catch (error) {}
   };
 }
