@@ -84,7 +84,7 @@ export class AuthController {
       if (!first_name || !email || !phone || !password) {
         res.status(400).json({
           success: false,
-          message: 'Missing required fields',
+          message: messages.errors.MISSING_CREDENTIALS,
           code: 'MISSING_CREDENTIALS',
         });
         return;
@@ -93,7 +93,7 @@ export class AuthController {
       if (!isValidEmail(email)) {
         res.status(400).json({
           success: false,
-          message: 'Invalid email format',
+          message: messages.errors.INVALID_EMAIL_FORMAT,
           code: 'INVALID_EMAIL_FORMAT',
         });
         return;
@@ -102,8 +102,7 @@ export class AuthController {
       if (!isValidPassword(password)) {
         res.status(400).json({
           success: false,
-          message:
-            'Password must be at least 6 characters long, include an uppercase letter, a lowercase letter, a number, and a special character',
+          message: messages.errors.INVALID_PASSWORD_FORMAT,
           code: 'INVALID_PASSWORD_FORMAT',
         });
         return;
@@ -113,7 +112,7 @@ export class AuthController {
       if (checkEmailExists.rows.length !== 0) {
         res.status(409).json({
           success: false,
-          message: 'Email already in use',
+          message: messages.errors.EMAIL_ALREADY_EXISTS,
           code: 'EMAIL_ALREADY_EXISTS',
         });
         return;
@@ -130,7 +129,7 @@ export class AuthController {
 
       res.status(201).json({
         success: true,
-        message: 'User registered successfully',
+        message: messages.success.USER_REGISTERED,
         code: 'USER_REGISTERED',
         data: {
           userId: newUser.id,
@@ -140,7 +139,7 @@ export class AuthController {
       console.error('Database error:', error);
       res.status(500).json({
         success: false,
-        message: 'An unexpected error occurred',
+        message: messages.errors.SERVER_ERROR,
         code: 'SERVER_ERROR',
       });
     }
