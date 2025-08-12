@@ -1,6 +1,6 @@
 # My First Flutter Project
 
-Welcome to my very first Flutter project! 🚀  
+Welcome to my very first Flutter project! 
 This repository contains the code and documentation for my initial steps with [Flutter](https://flutter.dev/), Google’s framework for building beautiful, natively compiled applications for mobile, web, and desktop from a single codebase.
 
 ## About
