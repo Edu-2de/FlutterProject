@@ -1,6 +1,9 @@
+// cspell: disable
 import 'package:flutter/material.dart';
 
+// Widget que exibe uma lista horizontal de produtos em destaque
 class FeaturedProducts extends StatelessWidget {
+  // Lista de produtos fictícios, cada produto é um Map com nome, imagem e preço
   final List<Map<String, dynamic>> products = [
     {
       'name': 'Wireless Headphones',
@@ -27,8 +30,9 @@ class FeaturedProducts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start, // Alinha à esquerda
       children: [
+        // Título "Featured Products" com padding lateral
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -39,25 +43,26 @@ class FeaturedProducts extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 12), // Espaço entre o título e a lista
         Container(
-          height: 220,
+          height: 220, // Altura fixa para a lista de produtos
           child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: products.length,
+            scrollDirection: Axis.horizontal, // Lista rola na horizontal
+            itemCount: products.length, // Quantidade de produtos
             itemBuilder: (context, index) {
-              final product = products[index];
+              final product = products[index]; // Produto atual
               return Container(
-                width: 160,
-                margin: EdgeInsets.symmetric(horizontal: 8),
+                width: 160, // Largura de cada card de produto
+                margin: EdgeInsets.symmetric(horizontal: 8), // Espaço entre os cards
                 child: Card(
-                  elevation: 2,
+                  elevation: 2, // Sombra do card
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12), // Bordas arredondadas
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Imagem do produto com borda arredondada no topo
                       ClipRRect(
                         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                         child: Image.network(
@@ -67,6 +72,7 @@ class FeaturedProducts extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                       ),
+                      // Nome do produto com padding interno
                       Padding(
                         padding: EdgeInsets.all(8),
                         child: Text(
@@ -76,9 +82,10 @@ class FeaturedProducts extends StatelessWidget {
                             fontSize: 16,
                           ),
                           maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                          overflow: TextOverflow.ellipsis, // Trunca se for muito longo
                         ),
                       ),
+                      // Preço do produto com padding lateral
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),
                         child: Text(
@@ -90,13 +97,14 @@ class FeaturedProducts extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Spacer(),
+                      Spacer(), // Empurra o botão para o final do card
+                      // Botão "Add to Cart" com padding e largura total
                       Padding(
                         padding: EdgeInsets.all(8),
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {}, // Ação ao clicar (vazia por enquanto)
                             child: Text('Add to Cart'),
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.symmetric(vertical: 8),
