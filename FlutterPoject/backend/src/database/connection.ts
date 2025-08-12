@@ -19,7 +19,7 @@ const pool = new Pool({
 });
 
 pool.on('connect', () => {
-  console.log('✅ Connected' );
+  console.log('✅ Connected');
 });
 
 pool.on('error', err => {
