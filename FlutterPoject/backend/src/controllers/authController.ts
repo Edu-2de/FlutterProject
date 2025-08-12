@@ -10,6 +10,12 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
+const isValidPassword = (password: string): boolean => {
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+  return passwordRegex.test(password);
+};
+
+
 export class AuthController {
   static login = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -103,7 +109,7 @@ export class AuthController {
       }
 
 
-      
+
     } catch (error) {
       res.status(500).json({
         success: false,
