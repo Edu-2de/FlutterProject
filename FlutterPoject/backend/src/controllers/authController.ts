@@ -40,9 +40,9 @@ export class AuthController {
       }
 
       const user = checkUser.rows[0];
-      const isValidPassword = await bcrypt.compare(password, user.password);
 
-      if (!isValidPassword) {
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+      if (!isPasswordCorrect) {
         res.status(401).json({
           success: false,
           message: 'Invalid credentials',
@@ -69,6 +69,7 @@ export class AuthController {
         },
       });
     } catch (error) {
+      console.error('Database error:', error);
       res.status(500).json({
         success: false,
         message: 'An unexpected error occurred',
@@ -78,11 +79,11 @@ export class AuthController {
   };
   static register = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { first_name, last_name = ' ', email, phone, password } = req.body;
+      const { first_name, last_name = '', email, phone, password } = req.body;
       if (!first_name || !email || !phone || !password) {
         res.status(400).json({
           success: false,
-          message: 'Email or password is missing',
+          message: 'Missing required fields',
           code: 'MISSING_CREDENTIALS',
         });
         return;
@@ -135,6 +136,7 @@ export class AuthController {
         },
       });
     } catch (error) {
+      console.error('Database error:', error);
       res.status(500).json({
         success: false,
         message: 'An unexpected error occurred',
