@@ -83,17 +83,33 @@ export class AuthController {
         return;
       }
 
+      if (!isValidEmail(email)) {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid email format',
+          code: 'INVALID_EMAIL_FORMAT',
+        });
+        return;
+      }
+
       const checkEmailExists = await pool.query(`SELECT * from users WHERE email = $1`, [email]);
       if (checkEmailExists.rows.length !== 0) {
-        res.status(401).json({
+        res.status(409).json({
           success: false,
-          message: 'Invalid credentials',
-          code: 'INVALID_CREDENTIALS',
+          message: 'Email already in use',
+          code: 'EMAIL_ALREADY_EXISTS',
         });
         return;
       }
 
 
-    } catch (error) {}
+      
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'An unexpected error occurred',
+        code: 'SERVER_ERROR',
+      });
+    }
   };
 }
