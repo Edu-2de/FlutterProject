@@ -21,16 +21,16 @@ let setupExecuted = false;
 
 export const setupDB = async () => {
   if (setupExecuted) {
-    console.log('Database setup already completed, skipping');
+    console.log('➡️ Database setup already completed, skipping');
     return;
   }
 
   try {
-    console.log('Setting up database...');
+    console.log('⏺️ Setting up database...');
 
     const tableExist = await checkIfTableExist();
     if (tableExist) {
-      console.log('Database tables already exist, skipping');
+      console.log('➡️ Database tables already exist, skipping');
       setupExecuted = true;
       return;
     }
@@ -39,11 +39,11 @@ export const setupDB = async () => {
     const schemaSql = fs.readFileSync(schemaPath, 'utf-8');
 
     await pool.query(schemaSql);
-    console.log('Database schema created successfully');
+    console.log('✅ Database schema created successfully');
 
     setupExecuted = true;
   } catch (error) {
-    console.error('Database setup error: ', error);
+    console.error('❌ Database setup error: ', error);
 
     if (error instanceof Error && error.message.includes('already exists')) {
       console.log('Tables already exist, continuing...');
