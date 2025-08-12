@@ -33,7 +33,20 @@ export class AuthController {
       const user = checkUser.rows[0];
       const isValidPassword = await bcrypt.compare(password, user.password);
 
-      
+      if (!isValidPassword) {
+        res.status(401).json({
+          success: false,
+          message: 'Invalid credentials',
+          code: 'INVALID_CREDENTIALS',
+        });
+        return;
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+        expiresIn: '1h',
+      });
+
+
     } catch (error) {}
   };
 }
