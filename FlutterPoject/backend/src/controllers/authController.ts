@@ -12,23 +12,28 @@ export class AuthController {
 
       if (!email || !password) {
         res.status(400).json({
-          success: false, 
-          message: 'Email or password is missing' ,
-          code: 'MISSING_CREDENTIALS'
+          success: false,
+          message: 'Email or password is missing',
+          code: 'MISSING_CREDENTIALS',
         });
         return;
       }
 
-      const checkResult = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+      const checkUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
 
-      if (checkResult.rows.length === 0) {
-        res.status(401).json({ 
+      if (checkUser.rows.length === 0) {
+        res.status(401).json({
           success: false,
           message: 'Invalid credentials',
-          code: 'INVALID_CREDENTIALS' 
+          code: 'INVALID_CREDENTIALS',
         });
         return;
       }
+
+      const user = checkUser.rows[0];
+      const isValidPassword = await bcrypt.compare(password, user.password);
+
+      
     } catch (error) {}
   };
 }
