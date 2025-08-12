@@ -46,7 +46,25 @@ export class AuthController {
         expiresIn: '1h',
       });
 
-
-    } catch (error) {}
+      res.status(200).json({
+        success: true,
+        message: 'Login successful',
+        code: 'LOGIN_SUCCESS',
+        data: {
+          token,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'An unexpected error occurred',
+        code: 'SERVER_ERROR',
+      });
+    }
   };
 }
