@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../database/connection';
+import { messages } from '../utils/messages';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
@@ -22,7 +23,7 @@ export class AuthController {
       if (!email || !password) {
         res.status(400).json({
           success: false,
-          message: 'Email or password is missing',
+          message: messages.errors.MISSING_CREDENTIALS,
           code: 'MISSING_CREDENTIALS',
         });
         return;
@@ -45,7 +46,7 @@ export class AuthController {
       if (!isPasswordCorrect) {
         res.status(401).json({
           success: false,
-          message: 'Invalid credentials',
+          message: messages.errors.INVALID_CREDENTIALS,
           code: 'INVALID_CREDENTIALS',
         });
         return;
@@ -57,7 +58,7 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'Login successful',
+        message: messages.success.LOGIN_SUCCESS,
         code: 'LOGIN_SUCCESS',
         data: {
           token,
@@ -72,7 +73,7 @@ export class AuthController {
       console.error('Database error:', error);
       res.status(500).json({
         success: false,
-        message: 'An unexpected error occurred',
+        message: messages.errors.SERVER_ERROR,
         code: 'SERVER_ERROR',
       });
     }
