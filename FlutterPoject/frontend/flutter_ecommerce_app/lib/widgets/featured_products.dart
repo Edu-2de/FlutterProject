@@ -27,6 +27,8 @@ class FeaturedProducts extends StatelessWidget {
     },
   ];
 
+  FeaturedProducts({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -44,7 +46,7 @@ class FeaturedProducts extends StatelessWidget {
           ),
         ),
         SizedBox(height: 12), // Espaço entre o título e a lista
-        Container(
+        SizedBox(
           height: 220, // Altura fixa para a lista de produtos
           child: ListView.builder(
             scrollDirection: Axis.horizontal, // Lista rola na horizontal
@@ -104,14 +106,14 @@ class FeaturedProducts extends StatelessWidget {
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {}, // Ação ao clicar (vazia por enquanto)
-                            child: Text('Add to Cart'),
+                            onPressed: () {},
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.symmetric(vertical: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                            ),
+                            ), // Ação ao clicar (vazia por enquanto)
+                            child: Text('Add to Cart'),
                           ),
                         ),
                       ),
