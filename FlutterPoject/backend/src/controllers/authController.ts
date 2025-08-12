@@ -15,7 +15,6 @@ const isValidPassword = (password: string): boolean => {
   return passwordRegex.test(password);
 };
 
-
 export class AuthController {
   static login = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -79,7 +78,7 @@ export class AuthController {
   };
   static register = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { first_name, last_name, email, phone, password } = req.body;
+      const { first_name, last_name = ' ', email, phone, password } = req.body;
       if (!first_name || !email || !phone || !password) {
         res.status(400).json({
           success: false,
@@ -98,6 +97,16 @@ export class AuthController {
         return;
       }
 
+      if (!isValidPassword(password)) {
+        res.status(400).json({
+          success: false,
+          message:
+            'Password must be at least 6 characters long, include an uppercase letter, a lowercase letter, a number, and a special character',
+          code: 'INVALID_PASSWORD_FORMAT',
+        });
+        return;
+      }
+
       const checkEmailExists = await pool.query(`SELECT * from users WHERE email = $1`, [email]);
       if (checkEmailExists.rows.length !== 0) {
         res.status(409).json({
@@ -108,8 +117,23 @@ export class AuthController {
         return;
       }
 
+      const hashedPassword = await bcrypt.hash(password, 10);
 
+      const newUserResult = await pool.query(
+        `INSERT INTO users(first_name, last_name, email, phone, password_hash, created_at) 
+       VALUES($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id`,
+        [first_name, last_name, email, phone, hashedPassword]
+      );
+      const newUser = newUserResult.rows[0];
 
+      res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        code: 'USER_REGISTERED',
+        data: {
+          userId: newUser.id,
+        },
+      });
     } catch (error) {
       res.status(500).json({
         success: false,
