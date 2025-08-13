@@ -4,7 +4,9 @@ import bcrypt from 'bcryptjs';
 import pool from '../database/connection';
 import { messages } from '../utils/messages';
 import { registerSchema, loginSchema } from '../validators/authValidators';
-import { RegisterUser, LoginUser, User } from '../interfaces/UserInterfaces';
+import {User } from '../interfaces/UserInterfaces';
+import logger from '../utils/logger';
+import { UserService } from '../services/UserService';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -25,8 +27,8 @@ export class AuthController {
 
       const { first_name, last_name = '', email, phone, password } = req.body;
 
-      const checkEmailExists = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
-      if (checkEmailExists.rows.length !== 0) {
+      const checkEmail = await UserService.findUserByEmail(email);
+      if (!checkEmail) {
         throw {
           status: 409,
           message: messages.errors.EMAIL_ALREADY_EXISTS,
@@ -36,12 +38,10 @@ export class AuthController {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const newUserResult = await pool.query(
-        `INSERT INTO users(first_name, last_name, email, phone, password_hash, created_at) 
-         VALUES($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id`,
-        [first_name, last_name, email, phone, hashedPassword]
-      );
-      const newUser = newUserResult.rows[0];
+      const newUser = await UserService.createUser(first_name, last_name, email, phone, hashedPassword);
+
+      logger.info(`User registered successfully: ${email}`);
+
 
       res.status(201).json({
         success: true,
@@ -69,8 +69,8 @@ export class AuthController {
 
       const { email, password } = req.body;
 
-      const checkUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
-      if (checkUser.rows.length === 0) {
+      const checkEmail = await UserService.findUserByEmail(email);
+      if (checkEmail) {
         throw {
           status: 401,
           message: messages.errors.INVALID_CREDENTIALS,
@@ -78,7 +78,7 @@ export class AuthController {
         };
       }
 
-      const user: User = checkUser.rows[0];
+      const user: User = checkEmail.rows[0];
 
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
       if (!isPasswordCorrect) {
@@ -90,8 +90,11 @@ export class AuthController {
       }
 
       const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-        expiresIn: '1h',
+        expiresIn: '15m',
       });
+
+      logger.info(`User logged in successfully: ${email}`);
+
 
       res.status(200).json({
         success: true,
