@@ -145,7 +145,7 @@ export class AuthController {
     }
   };
 
-  static getProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  static getUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = Number(req.params.userId);
 
@@ -172,6 +172,29 @@ export class AuthController {
         message: messages.success.PROFILE_FETCHED,
         code: 'PROFILE_FETCHED',
         data: userProfile,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getAllUsersProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const usersProfile = await UserService.getUsersProfile();
+
+      if (!usersProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USERS_NOT_FOUND,
+          code: 'USERS_NOT_FOUND',
+        };
+      }
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PROFILES_FETCHED,
+        code: 'PROFILES_FETCHED',
+        data: usersProfile,
       });
     } catch (error) {
       next(error);

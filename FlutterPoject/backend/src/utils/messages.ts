@@ -11,10 +11,12 @@ export const messages = {
     INVALID_TOKEN: 'The provided token is invalid or expired. Please log in again.',
     UNAUTHORIZED_ACCESS: 'You do not have permission to access this resource.',
     USER_NOT_FOUND: 'The user was not found. They may not be registered or the provided ID may be incorrect.',
+    USERS_NOT_FOUND: 'No users found, maybe the table is empty',
   },
   success: {
     LOGIN_SUCCESS: 'You have successfully logged in.',
     USER_REGISTERED: 'The user has been successfully registered.',
     PROFILE_FETCHED: 'The user profile was successfully retrieved.',
+    PROFILES_FETCHED: 'User profiles were successfully found',
   },
 };
