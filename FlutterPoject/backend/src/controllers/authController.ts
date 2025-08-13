@@ -465,6 +465,13 @@ export class AuthController {
           code: 'USER_NOT_FOUND',
         };
       }
+
+      UserService.deleteUserProfile(userId);
+
+      res.json({
+        message: 'User deleted successfully',
+        user: userProfile,
+      });
     } catch (error) {
       next(error);
     }
