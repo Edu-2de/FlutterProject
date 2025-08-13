@@ -7,6 +7,7 @@ import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
 import { isValidEmail, isValidPassword } from '../utils/validators';
+import pool from '../database/connection';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -311,7 +312,13 @@ export class AuthController {
       fields.push(`update_at = CURRENT_TIMESTAMP`);
       values.push(userId);
 
-      
+      const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
+      const result = await pool.query(query, values);
+
+      res.json({
+        message: 'User updated successfully',
+        user: result.rows[0],
+      });
     } catch (error) {
       next(error);
     }
