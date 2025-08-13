@@ -7,6 +7,9 @@ import { isValidEmail, isValidPassword } from '../utils/validators';
 import logger from '../utils/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined in the environment variables');
+}
 
 export class AuthController {
   static login = async (req: Request, res: Response): Promise<void> => {
