@@ -223,7 +223,22 @@ export class AuthController {
         };
       }
 
-      
+      const { first_name, last_name, email, phone, password } = req.body;
+
+      if (email) {
+        const userEmail = await UserService.findUserByEmail(email);
+        if (userEmail) {
+          throw {
+            status: 409,
+            message: messages.errors.EMAIL_ALREADY_EXISTS,
+            code: 'EMAIL_ALREADY_EXISTS',
+          };
+        }
+      }
+
+      if (phone) {
+        
+      }
     } catch (error) {
       next(error);
     }
