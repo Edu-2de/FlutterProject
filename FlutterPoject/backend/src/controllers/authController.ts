@@ -323,4 +323,11 @@ export class AuthController {
       next(error);
     }
   };
+
+  static updateUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+    } catch (error) {
+      next(error);
+    }
+  };
 }
