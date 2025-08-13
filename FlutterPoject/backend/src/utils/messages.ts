@@ -9,6 +9,7 @@ export const messages = {
     SERVER_ERROR: 'An unexpected error occurred',
     NO_TOKEN_PROVIDED: 'Access denied. No token provided.',
     INVALID_TOKEN: 'Invalid token.',
+    UNAUTHORIZED_ACCESS: 'Unauthorized access',
   },
   success: {
     LOGIN_SUCCESS: 'Login successful',

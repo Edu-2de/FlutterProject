@@ -14,4 +14,9 @@ export class UserService {
     );
     return result.rows[0];
   }
+
+  static async findUserById(id: number) {
+    const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id]);
+    return result.rows[0];
+  }
 }
