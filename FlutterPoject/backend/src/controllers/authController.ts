@@ -6,6 +6,7 @@ import { registerSchema, loginSchema } from '../validators/authValidators';
 import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
+import { isValidEmail, isValidPassword } from '../utils/validators';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -25,6 +26,22 @@ export class AuthController {
       }
 
       const { first_name, last_name = '', email, phone, password } = req.body;
+
+      if (!isValidEmail(email)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_EMAIL_FORMAT,
+          code: 'INVALID_EMAIL_FORMAT',
+        };
+      }
+
+      if (!isValidPassword(password)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_PASSWORD_FORMAT,
+          code: 'INVALID_PASSWORD_FORMAT',
+        };
+      }
 
       const checkEmail = await UserService.findUserByEmail(email);
       if (checkEmail) {
@@ -225,6 +242,22 @@ export class AuthController {
 
       const { first_name, last_name, email, phone, password } = req.body;
 
+      if (email && !isValidEmail(email)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_EMAIL_FORMAT,
+          code: 'INVALID_EMAIL_FORMAT',
+        };
+      }
+
+      if (password && !isValidPassword(password)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_PASSWORD_FORMAT,
+          code: 'INVALID_PASSWORD_FORMAT',
+        };
+      }
+
       if (email) {
         const userEmail = await UserService.findUserByEmail(email);
         if (userEmail) {
@@ -237,7 +270,14 @@ export class AuthController {
       }
 
       if (phone) {
-        
+        const userPhone = await UserService.findUserByPhone(phone);
+        if (userPhone) {
+          throw {
+            status: 409,
+            message: messages.errors.PHONE_ALREADY_EXISTS,
+            code: 'PHONE_ALREADY_EXISTS',
+          };
+        }
       }
     } catch (error) {
       next(error);
