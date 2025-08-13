@@ -12,7 +12,8 @@ export const messages = {
     UNAUTHORIZED_ACCESS: 'You do not have permission to access this resource.',
     USER_NOT_FOUND: 'The user was not found. They may not be registered or the provided ID may be incorrect.',
     USERS_NOT_FOUND: 'No users found, maybe the table is empty',
-    PHONE_ALREADY_EXISTS: 'This phone is already registered. Please use a different phone.'
+    PHONE_ALREADY_EXISTS: 'This phone is already registered. Please use a different phone.',
+    INVALID_ROLE: 'The provided role is incorrect. Please check the role types.'
   },
   success: {
     LOGIN_SUCCESS: 'You have successfully logged in.',

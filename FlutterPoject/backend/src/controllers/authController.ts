@@ -326,6 +326,119 @@ export class AuthController {
 
   static updateUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const userId = Number(req.params.userId);
+
+      if (!userId) {
+        throw {
+          status: 401,
+          message: messages.errors.UNAUTHORIZED_ACCESS,
+          code: 'UNAUTHORIZED_ACCESS',
+        };
+      }
+
+      const userProfile = await UserService.findUserById(userId);
+
+      if (!userProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USER_NOT_FOUND,
+          code: 'USER_NOT_FOUND',
+        };
+      }
+
+      const { first_name, last_name, email, phone, password, role } = req.body;
+
+      if (email && !isValidEmail(email)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_EMAIL_FORMAT,
+          code: 'INVALID_EMAIL_FORMAT',
+        };
+      }
+
+      if (password && !isValidPassword(password)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_PASSWORD_FORMAT,
+          code: 'INVALID_PASSWORD_FORMAT',
+        };
+      }
+
+      if (email) {
+        const userEmail = await UserService.findUserByEmail(email);
+        if (userEmail) {
+          throw {
+            status: 409,
+            message: messages.errors.EMAIL_ALREADY_EXISTS,
+            code: 'EMAIL_ALREADY_EXISTS',
+          };
+        }
+      }
+
+      if (phone) {
+        const userPhone = await UserService.findUserByPhone(phone);
+        if (userPhone) {
+          throw {
+            status: 409,
+            message: messages.errors.PHONE_ALREADY_EXISTS,
+            code: 'PHONE_ALREADY_EXISTS',
+          };
+        }
+      }
+
+      if (role) {
+        if (role !== 'admin' && role !== 'manager' && role !== 'customer') {
+          throw {
+            status: 400,
+            message: messages.errors.INVALID_ROLE,
+            code: 'INVALID_ROLE',
+          };
+        }
+      }
+
+      const fields = [];
+      const values = [];
+      let idx = 1;
+
+      if (first_name) {
+        fields.push(`first_name = $${idx++}`);
+        values.push(first_name);
+      }
+
+      if (last_name) {
+        fields.push(`last_name = $${idx++}`);
+        values.push(last_name);
+      }
+
+      if (email) {
+        fields.push(`email = $${idx++}`);
+      }
+
+      if (phone) {
+        fields.push(`phone = $${idx++}`);
+      }
+
+      if (password) {
+        fields.push(`password_hash = $${idx++}`);
+        const password_hash = await bcrypt.hash(password, 10);
+        values.push(password_hash);
+      }
+
+      if (role) {
+        fields.push(`role = $${idx++}`);
+        values.push(role);
+      }
+
+      fields.push(`update_at = CURRENT_TIMESTAMP`);
+      values.push(userId);
+
+      const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
+      const result = await pool.query(query, values);
+
+      res.json({
+        message: 'User updated successfully',
+        user: result.rows[0],
+      });
     } catch (error) {
       next(error);
     }
