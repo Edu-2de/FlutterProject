@@ -3,18 +3,10 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../database/connection';
 import { messages } from '../utils/messages';
+import { isValidEmail, isValidPassword } from '../utils/validators';
+import logger from '../utils/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
-
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-const isValidPassword = (password: string): boolean => {
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
-  return passwordRegex.test(password);
-};
 
 export class AuthController {
   static login = async (req: Request, res: Response): Promise<void> => {
@@ -70,7 +62,7 @@ export class AuthController {
         },
       });
     } catch (error) {
-      console.error('Database error:', error);
+      logger.error('Database error:', error);
       res.status(500).json({
         success: false,
         message: messages.errors.SERVER_ERROR,
@@ -136,7 +128,7 @@ export class AuthController {
         },
       });
     } catch (error) {
-      console.error('Database error:', error);
+      logger.error('Database error:', error);
       res.status(500).json({
         success: false,
         message: messages.errors.SERVER_ERROR,
