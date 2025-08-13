@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../database/connection';
 import { messages } from '../utils/messages';
-import { isValidEmail, isValidPassword } from '../utils/validators';
 import { registerSchema, loginSchema } from '../validators/authValidators';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
@@ -14,7 +13,7 @@ if (!JWT_SECRET) {
 export class AuthController {
   static register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { error } = loginSchema.validate(req.body);
+      const { error } = registerSchema.validate(req.body);
       if (error) {
         throw {
           status: 400,
@@ -24,30 +23,6 @@ export class AuthController {
       }
 
       const { first_name, last_name = '', email, phone, password } = req.body;
-
-      if (!first_name || !email || !phone || !password) {
-        throw {
-          status: 400,
-          message: messages.errors.MISSING_CREDENTIALS,
-          code: 'MISSING_CREDENTIALS',
-        };
-      }
-
-      if (!isValidEmail(email)) {
-        throw {
-          status: 400,
-          message: messages.errors.INVALID_EMAIL_FORMAT,
-          code: 'INVALID_EMAIL_FORMAT',
-        };
-      }
-
-      if (!isValidPassword(password)) {
-        throw {
-          status: 400,
-          message: messages.errors.INVALID_PASSWORD_FORMAT,
-          code: 'INVALID_PASSWORD_FORMAT',
-        };
-      }
 
       const checkEmailExists = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
       if (checkEmailExists.rows.length !== 0) {
@@ -79,9 +54,10 @@ export class AuthController {
       next(error);
     }
   };
+
   static login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { error } = registerSchema.validate(req.body);
+      const { error } = loginSchema.validate(req.body);
       if (error) {
         throw {
           status: 400,
@@ -89,18 +65,10 @@ export class AuthController {
           code: 'VALIDATION_ERROR',
         };
       }
+
       const { email, password } = req.body;
 
-      if (!email || !password) {
-        throw {
-          status: 400,
-          message: messages.errors.MISSING_CREDENTIALS,
-          code: 'MISSING_CREDENTIALS',
-        };
-      }
-
       const checkUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
-
       if (checkUser.rows.length === 0) {
         throw {
           status: 401,
@@ -110,8 +78,8 @@ export class AuthController {
       }
 
       const user = checkUser.rows[0];
-      const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
       if (!isPasswordCorrect) {
         throw {
           status: 401,
