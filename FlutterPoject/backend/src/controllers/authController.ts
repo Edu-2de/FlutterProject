@@ -476,4 +476,12 @@ export class AuthController {
       next(error);
     }
   };
+
+  static deleteUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      
+    } catch (error) {
+      next(error);
+    }
+  };
 }
