@@ -87,7 +87,7 @@ export class AuthController {
         };
       }
 
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      const token = jwt.sign({ id: user.id, email: user.email, role: user.role}, JWT_SECRET, {
         expiresIn: '15m',
       });
 
@@ -111,4 +111,12 @@ export class AuthController {
       next(error);
     }
   };
+
+  static getUserProfile = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try{
+
+    }catch(error){
+      next(error);
+    }
+  }
 }
