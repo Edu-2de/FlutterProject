@@ -55,6 +55,21 @@ export class AuthMiddleware {
       };
     }
 
-    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      console.log('👨‍💼 User: ', decoded);
+
+      if (decoded.role !== 'admin' && decoded.role !== 'manager') {
+        console.log('❌ Role:', decoded.role);
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      req.user = decoded;
+      console.log('✅ Admin access accepted');
+      next();
+    } catch (error) {
+      console.log('❌ Invalid Token:', error);
+      return res.status(403).json({ message: 'Invalid token' });
+    }
   }
 }
