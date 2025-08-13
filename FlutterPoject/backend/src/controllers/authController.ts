@@ -6,6 +6,8 @@ import { registerSchema, loginSchema } from '../validators/authValidators';
 import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
+import { isValidEmail, isValidPassword } from '../utils/validators';
+import pool from '../database/connection';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -25,6 +27,22 @@ export class AuthController {
       }
 
       const { first_name, last_name = '', email, phone, password } = req.body;
+
+      if (!isValidEmail(email)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_EMAIL_FORMAT,
+          code: 'INVALID_EMAIL_FORMAT',
+        };
+      }
+
+      if (!isValidPassword(password)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_PASSWORD_FORMAT,
+          code: 'INVALID_PASSWORD_FORMAT',
+        };
+      }
 
       const checkEmail = await UserService.findUserByEmail(email);
       if (checkEmail) {
@@ -87,7 +105,7 @@ export class AuthController {
         };
       }
 
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
         expiresIn: '15m',
       });
 
@@ -106,6 +124,200 @@ export class AuthController {
             role: user.role,
           },
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        throw {
+          status: 401,
+          message: messages.errors.UNAUTHORIZED_ACCESS,
+          code: 'UNAUTHORIZED_ACCESS',
+        };
+      }
+
+      const userProfile = await UserService.findUserById(userId);
+
+      if (!userProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USER_NOT_FOUND,
+          code: 'USER_NOT_FOUND',
+        };
+      }
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PROFILE_FETCHED,
+        code: 'PROFILE_FETCHED',
+        data: userProfile,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = Number(req.params.userId);
+
+      if (!userId) {
+        throw {
+          status: 401,
+          message: messages.errors.UNAUTHORIZED_ACCESS,
+          code: 'UNAUTHORIZED_ACCESS',
+        };
+      }
+
+      const userProfile = await UserService.findUserById(userId);
+
+      if (!userProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USER_NOT_FOUND,
+          code: 'USER_NOT_FOUND',
+        };
+      }
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PROFILE_FETCHED,
+        code: 'PROFILE_FETCHED',
+        data: userProfile,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static getAllUsersProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const usersProfile = await UserService.getUsersProfile();
+
+      if (!usersProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USERS_NOT_FOUND,
+          code: 'USERS_NOT_FOUND',
+        };
+      }
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PROFILES_FETCHED,
+        code: 'PROFILES_FETCHED',
+        data: usersProfile,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static updateUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        throw {
+          status: 401,
+          message: messages.errors.UNAUTHORIZED_ACCESS,
+          code: 'UNAUTHORIZED_ACCESS',
+        };
+      }
+
+      const userProfile = await UserService.findUserById(userId);
+
+      if (!userProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USER_NOT_FOUND,
+          code: 'USER_NOT_FOUND',
+        };
+      }
+
+      const { first_name, last_name, email, phone, password } = req.body;
+
+      if (email && !isValidEmail(email)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_EMAIL_FORMAT,
+          code: 'INVALID_EMAIL_FORMAT',
+        };
+      }
+
+      if (password && !isValidPassword(password)) {
+        throw {
+          status: 400,
+          message: messages.errors.INVALID_PASSWORD_FORMAT,
+          code: 'INVALID_PASSWORD_FORMAT',
+        };
+      }
+
+      if (email) {
+        const userEmail = await UserService.findUserByEmail(email);
+        if (userEmail) {
+          throw {
+            status: 409,
+            message: messages.errors.EMAIL_ALREADY_EXISTS,
+            code: 'EMAIL_ALREADY_EXISTS',
+          };
+        }
+      }
+
+      if (phone) {
+        const userPhone = await UserService.findUserByPhone(phone);
+        if (userPhone) {
+          throw {
+            status: 409,
+            message: messages.errors.PHONE_ALREADY_EXISTS,
+            code: 'PHONE_ALREADY_EXISTS',
+          };
+        }
+      }
+
+      const fields = [];
+      const values = [];
+      let idx = 1;
+
+      if (first_name) {
+        fields.push(`first_name = $${idx++}`);
+        values.push(first_name);
+      }
+
+      if (last_name) {
+        fields.push(`last_name = $${idx++}`);
+        values.push(last_name);
+      }
+
+      if (email) {
+        fields.push(`email = $${idx++}`);
+      }
+
+      if (phone) {
+        fields.push(`phone = $${idx++}`);
+      }
+
+      if (password) {
+        fields.push(`password_hash = $${idx++}`);
+        const password_hash = await bcrypt.hash(password, 10);
+        values.push(password_hash);
+      }
+
+      fields.push(`update_at = CURRENT_TIMESTAMP`);
+      values.push(userId);
+
+      const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
+      const result = await pool.query(query, values);
+
+      res.json({
+        message: 'User updated successfully',
+        user: result.rows[0],
       });
     } catch (error) {
       next(error);

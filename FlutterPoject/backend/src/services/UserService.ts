@@ -14,4 +14,19 @@ export class UserService {
     );
     return result.rows[0];
   }
+
+  static async findUserById(id: number) {
+    const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id]);
+    return result.rows[0];
+  }
+
+  static async getUsersProfile() {
+    const result = await pool.query(`SELECT * FROM users`);
+    return result.rows[0];
+  }
+
+  static async findUserByPhone(phone: string) {
+    const result = await pool.query(`SELECT * FROM users WHERE phone = $1`, [phone]);
+    return result.rows[0];
+  }
 }
