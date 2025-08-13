@@ -279,6 +279,39 @@ export class AuthController {
           };
         }
       }
+
+      const fields = [];
+      const values = [];
+      let idx = 1;
+
+      if (first_name) {
+        fields.push(`first_name = $${idx++}`);
+        values.push(first_name);
+      }
+
+      if (last_name) {
+        fields.push(`last_name = $${idx++}`);
+        values.push(last_name);
+      }
+
+      if (email) {
+        fields.push(`email = $${idx++}`);
+      }
+
+      if (phone) {
+        fields.push(`phone = $${idx++}`);
+      }
+
+      if (password) {
+        fields.push(`password_hash = $${idx++}`);
+        const password_hash = await bcrypt.hash(password, 10);
+        values.push(password_hash);
+      }
+
+      fields.push(`update_at = CURRENT_TIMESTAMP`);
+      values.push(userId);
+
+      
     } catch (error) {
       next(error);
     }
