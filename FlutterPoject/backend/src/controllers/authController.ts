@@ -144,4 +144,37 @@ export class AuthController {
       next(error);
     }
   };
+
+  static getProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = Number(req.params.userId);
+
+      if (!userId) {
+        throw {
+          status: 401,
+          message: messages.errors.UNAUTHORIZED_ACCESS,
+          code: 'UNAUTHORIZED_ACCESS',
+        };
+      }
+
+      const userProfile = await UserService.findUserById(userId);
+
+      if (!userProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USER_NOT_FOUND,
+          code: 'USER_NOT_FOUND',
+        };
+      }
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PROFILE_FETCHED,
+        code: 'PROFILE_FETCHED',
+        data: userProfile,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
