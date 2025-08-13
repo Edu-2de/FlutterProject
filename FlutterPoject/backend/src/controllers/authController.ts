@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import pool from '../database/connection';
 import { messages } from '../utils/messages';
 import { registerSchema, loginSchema } from '../validators/authValidators';
+import { RegisterUser, LoginUser, User } from '../interfaces/UserInterfaces';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -77,7 +78,7 @@ export class AuthController {
         };
       }
 
-      const user = checkUser.rows[0];
+      const user: User = checkUser.rows[0];
 
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
       if (!isPasswordCorrect) {
@@ -101,7 +102,8 @@ export class AuthController {
           user: {
             id: user.id,
             email: user.email,
-            name: user.name,
+            name: user.first_name,
+            role: user.role
           },
         },
       });
