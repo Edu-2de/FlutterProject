@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import pool from '../database/connection';
 import { messages } from '../utils/messages';
 import { isValidEmail, isValidPassword } from '../utils/validators';
+import { registerSchema, loginSchema } from '../validators/authValidators';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -11,63 +12,17 @@ if (!JWT_SECRET) {
 }
 
 export class AuthController {
-  static login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
-        throw {
-          status: 400,
-          message: messages.errors.MISSING_CREDENTIALS,
-          code: 'MISSING_CREDENTIALS',
-        };
-      }
-
-      const checkUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
-
-      if (checkUser.rows.length === 0) {
-        throw {
-          status: 401,
-          message: messages.errors.INVALID_CREDENTIALS,
-          code: 'INVALID_CREDENTIALS',
-        };
-      }
-
-      const user = checkUser.rows[0];
-      const isPasswordCorrect = await bcrypt.compare(password, user.password);
-
-      if (!isPasswordCorrect) {
-        throw {
-          status: 401,
-          message: messages.errors.INVALID_CREDENTIALS,
-          code: 'INVALID_CREDENTIALS',
-        };
-      }
-
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-        expiresIn: '1h',
-      });
-
-      res.status(200).json({
-        success: true,
-        message: messages.success.LOGIN_SUCCESS,
-        code: 'LOGIN_SUCCESS',
-        data: {
-          token,
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
-        },
-      });
-    } catch (error) {
-      next(error); 
-    }
-  };
-
   static register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const { error } = loginSchema.validate(req.body);
+      if (error) {
+        throw {
+          status: 400,
+          message: error.details[0].message,
+          code: 'VALIDATION_ERROR',
+        };
+      }
+
       const { first_name, last_name = '', email, phone, password } = req.body;
 
       if (!first_name || !email || !phone || !password) {
@@ -121,7 +76,69 @@ export class AuthController {
         },
       });
     } catch (error) {
-      next(error); 
+      next(error);
+    }
+  };
+  static login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { error } = registerSchema.validate(req.body);
+      if (error) {
+        throw {
+          status: 400,
+          message: error.details[0].message,
+          code: 'VALIDATION_ERROR',
+        };
+      }
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        throw {
+          status: 400,
+          message: messages.errors.MISSING_CREDENTIALS,
+          code: 'MISSING_CREDENTIALS',
+        };
+      }
+
+      const checkUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+
+      if (checkUser.rows.length === 0) {
+        throw {
+          status: 401,
+          message: messages.errors.INVALID_CREDENTIALS,
+          code: 'INVALID_CREDENTIALS',
+        };
+      }
+
+      const user = checkUser.rows[0];
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordCorrect) {
+        throw {
+          status: 401,
+          message: messages.errors.INVALID_CREDENTIALS,
+          code: 'INVALID_CREDENTIALS',
+        };
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+        expiresIn: '1h',
+      });
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.LOGIN_SUCCESS,
+        code: 'LOGIN_SUCCESS',
+        data: {
+          token,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
     }
   };
 }
