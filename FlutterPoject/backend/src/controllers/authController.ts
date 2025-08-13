@@ -443,4 +443,11 @@ export class AuthController {
       next(error);
     }
   };
+
+  static deleteUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+    } catch (error) {
+      next(error);
+    }
+  };
 }
