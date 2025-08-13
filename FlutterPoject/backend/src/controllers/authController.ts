@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import pool from '../database/connection';
 import { messages } from '../utils/messages';
 import { registerSchema, loginSchema } from '../validators/authValidators';
-import {User } from '../interfaces/UserInterfaces';
+import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
 
@@ -28,7 +27,7 @@ export class AuthController {
       const { first_name, last_name = '', email, phone, password } = req.body;
 
       const checkEmail = await UserService.findUserByEmail(email);
-      if (!checkEmail) {
+      if (checkEmail) {
         throw {
           status: 409,
           message: messages.errors.EMAIL_ALREADY_EXISTS,
@@ -41,7 +40,6 @@ export class AuthController {
       const newUser = await UserService.createUser(first_name, last_name, email, phone, hashedPassword);
 
       logger.info(`User registered successfully: ${email}`);
-
 
       res.status(201).json({
         success: true,
@@ -70,7 +68,7 @@ export class AuthController {
       const { email, password } = req.body;
 
       const checkEmail = await UserService.findUserByEmail(email);
-      if (checkEmail) {
+      if (!checkEmail) {
         throw {
           status: 401,
           message: messages.errors.INVALID_CREDENTIALS,
@@ -95,7 +93,6 @@ export class AuthController {
 
       logger.info(`User logged in successfully: ${email}`);
 
-
       res.status(200).json({
         success: true,
         message: messages.success.LOGIN_SUCCESS,
@@ -106,7 +103,7 @@ export class AuthController {
             id: user.id,
             email: user.email,
             name: user.first_name,
-            role: user.role
+            role: user.role,
           },
         },
       });
