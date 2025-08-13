@@ -133,6 +133,13 @@ export class AuthController {
           code: 'USER_NOT_FOUND',
         };
       }
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PROFILE_FETCHED,
+        code: 'PROFILE_FETCHED',
+        data: userProfile,
+      });
     } catch (error) {
       next(error);
     }
