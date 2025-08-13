@@ -32,8 +32,29 @@ export class AuthMiddleware {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
       req.user = decoded;
       next();
-    }catch(error){
-      
+    } catch (error) {
+      throw {
+        status: 403,
+        message: messages.errors.INVALID_TOKEN,
+        code: 'INVALID_TOKEN',
+      };
     }
   };
+  static requireAdmin(req: any, res: any, next: any) {
+    console.log('⏳ Verifying....');
+    console.log('Headers:', req.headers.authorization);
+
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      throw {
+        status: 401,
+        message: messages.errors.NO_TOKEN_PROVIDED,
+        code: 'NO_TOKEN_PROVIDED',
+      };
+    }
+
+    
+  }
 }

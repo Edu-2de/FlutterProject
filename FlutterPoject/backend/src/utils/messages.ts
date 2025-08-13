@@ -8,6 +8,7 @@ export const messages = {
     EMAIL_ALREADY_EXISTS: 'Email already in use',
     SERVER_ERROR: 'An unexpected error occurred',
     NO_TOKEN_PROVIDED: 'Access denied. No token provided.',
+    INVALID_TOKEN: 'Invalid token.',
   },
   success: {
     LOGIN_SUCCESS: 'Login successful',
