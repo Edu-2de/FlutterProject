@@ -341,7 +341,7 @@ describe('AuthController', () => {
     });
 
     it('should return an error if user is not authenticated', async () => {
-      mockReq.params = {userId: undefined};
+      mockReq.params = { userId: undefined };
 
       await AuthController.getUserProfileById(mockReq, mockRes, mockNext);
 
@@ -351,6 +351,21 @@ describe('AuthController', () => {
         code: 'UNAUTHORIZED_ACCESS',
       });
       expect(mockUserService.findUserById).not.toHaveBeenCalled();
+    });
+
+    it('should return an error if user profile is not found', async () => {
+      mockReq.params = { userId: '1' };
+
+      mockUserService.findUserById.mockResolvedValueOnce(null);
+
+      await AuthController.getUserProfileById(mockReq, mockRes, mockNext);
+
+      expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
+      expect(mockNext).toHaveBeenCalledWith({
+        status: 404,
+        message: messages.errors.USER_NOT_FOUND,
+        code: 'USER_NOT_FOUND',
+      });
     });
   });
 });
