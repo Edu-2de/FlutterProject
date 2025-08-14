@@ -56,9 +56,9 @@ describe('AuthController', () => {
         password: 'Password123!',
       };
 
-      mockUserService.findUserByEmail.mockResolvedValue(null); 
-      (mockBcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword'); 
-      mockUserService.createUser.mockResolvedValue({ id: 1 }); 
+      mockUserService.findUserByEmail.mockResolvedValue(null);
+      (mockBcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      mockUserService.createUser.mockResolvedValue({ id: 1 });
 
       await AuthController.register(mockReq, mockRes, mockNext);
 
@@ -135,9 +135,9 @@ describe('AuthController', () => {
         role: 'customer',
       };
 
-      mockUserService.findUserByEmail.mockResolvedValue({ rows: [mockUser] }); 
-      (mockBcrypt.compare as jest.Mock).mockResolvedValue(true); 
-      (mockJwt.sign as jest.Mock).mockReturnValue('mockedToken'); 
+      mockUserService.findUserByEmail.mockResolvedValue({ rows: [mockUser] });
+      (mockBcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (mockJwt.sign as jest.Mock).mockReturnValue('mockedToken');
 
       await AuthController.login(mockReq, mockRes, mockNext);
 
@@ -198,7 +198,7 @@ describe('AuthController', () => {
       };
 
       mockUserService.findUserByEmail.mockResolvedValue({ rows: [mockUser] });
-      (mockBcrypt.compare as jest.Mock).mockResolvedValue(false); 
+      (mockBcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await AuthController.login(mockReq, mockRes, mockNext);
 
@@ -209,6 +209,104 @@ describe('AuthController', () => {
         message: messages.errors.INVALID_CREDENTIALS,
         code: 'INVALID_CREDENTIALS',
       });
+    });
+  });
+
+  describe('getUserProfile', () => {
+    it('should get user profile successfully', async () => {
+      const mockUser = {
+        id: 1,
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '123456789',
+        role: 'customer',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
+
+      mockReq.user = {
+        id: 1,
+        email: 'john.doe@example.com',
+        role: 'customer',
+      };
+
+      mockUserService.findUserById.mockResolvedValue(mockUser);
+
+      await AuthController.getUserProfile(mockReq, mockRes, mockNext);
+
+      expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        message: messages.success.PROFILE_FETCHED,
+        code: 'PROFILE_FETCHED',
+        data: mockUser,
+      });
+    });
+
+    it('should return an error if user is not authenticated', async () => {
+      mockReq.user = undefined;
+
+      await AuthController.getUserProfile(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith({
+        status: 401,
+        message: messages.errors.UNAUTHORIZED_ACCESS,
+        code: 'UNAUTHORIZED_ACCESS',
+      });
+      expect(mockUserService.findUserById).not.toHaveBeenCalled();
+    });
+
+    it('should return an error if user profile is not found', async () => {
+      mockReq.user = {
+        id: 1,
+        email: 'john.doe@example.com',
+        role: 'customer',
+      };
+
+      mockUserService.findUserById.mockResolvedValue(null); 
+
+      await AuthController.getUserProfile(mockReq, mockRes, mockNext);
+
+      expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
+      expect(mockNext).toHaveBeenCalledWith({
+        status: 404,
+        message: messages.errors.USER_NOT_FOUND,
+        code: 'USER_NOT_FOUND',
+      });
+    });
+
+    it('should return an error if userId is missing from req.user', async () => {
+      mockReq.user = {
+        email: 'john.doe@example.com',
+        role: 'customer',
+      };
+
+      await AuthController.getUserProfile(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith({
+        status: 401,
+        message: messages.errors.UNAUTHORIZED_ACCESS,
+        code: 'UNAUTHORIZED_ACCESS',
+      });
+      expect(mockUserService.findUserById).not.toHaveBeenCalled();
+    });
+
+    it('should handle service errors', async () => {
+      mockReq.user = {
+        id: 1,
+        email: 'john.doe@example.com',
+        role: 'customer',
+      };
+
+      const serviceError = new Error('Database connection failed');
+      mockUserService.findUserById.mockRejectedValue(serviceError);
+
+      await AuthController.getUserProfile(mockReq, mockRes, mockNext);
+
+      expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
+      expect(mockNext).toHaveBeenCalledWith(serviceError);
     });
   });
 });
