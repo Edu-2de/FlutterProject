@@ -497,7 +497,7 @@ describe('AuthController', () => {
         last_name: 'Kobe',
         email: 'jonas.doe@example.com',
         phone: '987654321',
-        password: 'Abc1234@#',
+        password: 'Password123!',
       };
 
       mockUserService.findUserById.mockResolvedValue(mockUser);
