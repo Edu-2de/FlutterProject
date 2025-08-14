@@ -340,7 +340,7 @@ describe('AuthController', () => {
       });
     });
 
-    it('should return an error if user is not authenticated', async () => {
+    it('should return an error if userId is missing', async () => {
       mockReq.params = { userId: undefined };
 
       await AuthController.getUserProfileById(mockReq, mockRes, mockNext);
@@ -366,6 +366,22 @@ describe('AuthController', () => {
         message: messages.errors.USER_NOT_FOUND,
         code: 'USER_NOT_FOUND',
       });
+    });
+
+    it('should handle service errors', async () => {
+      mockReq.user = {
+        id: 1,
+        email: 'john.doe@example.com',
+        role: 'customer',
+      };
+
+      const serviceError = new Error('Database connection failed');
+      mockUserService.findUserById.mockRejectedValue(serviceError);
+
+      await AuthController.getUserProfile(mockReq, mockRes, mockNext);
+
+      expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
+      expect(mockNext).toHaveBeenCalledWith(serviceError);
     });
   });
 });
