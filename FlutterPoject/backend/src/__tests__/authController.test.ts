@@ -3,6 +3,16 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { UserService } from '../services/UserService';
 import { messages } from '../utils/messages';
+import pool from '../database/connection';
+
+jest.mock('../database/connection', () => ({
+  __esModule: true,
+  default: {
+    query: jest.fn(),
+  },
+}));
+
+const mockPool = pool as jest.Mocked<typeof pool>;
 
 jest.mock('bcryptjs', () => ({
   hash: jest.fn(),
@@ -19,6 +29,9 @@ jest.mock('../services/UserService', () => ({
     findUserByEmail: jest.fn(),
     createUser: jest.fn(),
     findUserById: jest.fn(),
+    getUsersProfile: jest.fn(),
+    findUserByPhone: jest.fn(),
+    deleteUserProfile: jest.fn(),
   },
 }));
 
@@ -382,6 +395,133 @@ describe('AuthController', () => {
 
       expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
       expect(mockNext).toHaveBeenCalledWith(serviceError);
+    });
+  });
+
+  describe('getAllUsersProfile', () => {
+    it('should be users profile successfully', async () => {
+      const mockUsers = [
+        {
+          id: 1,
+          first_name: 'John',
+          last_name: 'Doe',
+          email: 'john.doe@example.com',
+          phone: '123456789',
+          role: 'customer',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+        {
+          id: 2,
+          first_name: 'Marta',
+          last_name: 'Rol',
+          email: 'marta.fol@example.com',
+          phone: '543216789',
+          role: 'customer',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+        {
+          id: 3,
+          first_name: 'Helen',
+          last_name: 'Rig',
+          email: 'helen.rig@example.com',
+          phone: '123459876',
+          role: 'customer',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+      ];
+
+      mockUserService.getUsersProfile.mockResolvedValueOnce(mockUsers);
+
+      await AuthController.getAllUsersProfile(mockReq, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        message: messages.success.PROFILES_FETCHED,
+        code: 'PROFILES_FETCHED',
+        data: mockUsers,
+      });
+    });
+
+    it('should return an error if user profiles are not found', async () => {
+      mockUserService.getUsersProfile.mockResolvedValueOnce(null);
+
+      await AuthController.getAllUsersProfile(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith({
+        status: 404,
+        message: messages.errors.USERS_NOT_FOUND,
+        code: 'USERS_NOT_FOUND',
+      });
+
+      expect(mockRes.status).not.toHaveBeenCalled();
+      expect(mockRes.json).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateUserProfile', () => {
+    it('should be able to successfully update the user', async () => {
+      const mockUser = {
+        id: 1,
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '123456789',
+        role: 'customer',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
+
+      const updatedUser = {
+        id: 1,
+        first_name: 'Jonas',
+        last_name: 'Kobe',
+        email: 'jonas.doe@example.com',
+        phone: '987654321',
+        role: 'customer',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
+
+      mockReq.user = {
+        id: 1,
+        email: 'john.doe@example.com',
+        role: 'customer',
+      };
+
+      mockReq.body = {
+        first_name: 'Jonas',
+        last_name: 'Kobe',
+        email: 'jonas.doe@example.com',
+        phone: '987654321',
+        password: 'Password123!',
+      };
+
+      mockUserService.findUserById.mockResolvedValue(mockUser);
+      mockUserService.findUserByEmail.mockResolvedValueOnce(null);
+      mockUserService.findUserByPhone.mockResolvedValueOnce(null);
+      (mockBcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+
+      (mockPool.query as jest.Mock).mockResolvedValue({ rows: [updatedUser] } as any);
+
+      await AuthController.updateUserProfile(mockReq, mockRes, mockNext);
+
+   
+      console.log('mockNext calls:', mockNext.mock.calls);
+      console.log('mockRes.json calls:', mockRes.json.mock.calls);
+      console.log('mockRes.status calls:', mockRes.status.mock.calls);
+
+
+      expect(mockNext).not.toHaveBeenCalled();
+
+   
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User updated successfully',
+        user: updatedUser,
+      });
     });
   });
 });
