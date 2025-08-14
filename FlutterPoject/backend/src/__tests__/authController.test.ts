@@ -19,6 +19,9 @@ jest.mock('../services/UserService', () => ({
     findUserByEmail: jest.fn(),
     createUser: jest.fn(),
     findUserById: jest.fn(),
+    getUsersProfile: jest.fn(),
+    findUserByPhone: jest.fn(),
+    deleteUserProfile: jest.fn(),
   },
 }));
 
@@ -382,6 +385,55 @@ describe('AuthController', () => {
 
       expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
       expect(mockNext).toHaveBeenCalledWith(serviceError);
+    });
+  });
+
+  describe('getAllUsersProfile', () => {
+    it('should be users profile successfully', async () => {
+      const mockUsers = [
+        {
+          id: 1,
+          first_name: 'John',
+          last_name: 'Doe',
+          email: 'john.doe@example.com',
+          phone: '123456789',
+          role: 'customer',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+        {
+          id: 2,
+          first_name: 'Marta',
+          last_name: 'Rol',
+          email: 'marta.fol@example.com',
+          phone: '543216789',
+          role: 'customer',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+        {
+          id: 3,
+          first_name: 'Helen',
+          last_name: 'Rig',
+          email: 'helen.rig@example.com',
+          phone: '123459876',
+          role: 'customer',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
+        },
+      ];
+
+      mockUserService.getUsersProfile.mockResolvedValueOnce(mockUsers);
+
+      await AuthController.getAllUsersProfile(mockReq, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        message: messages.success.PROFILES_FETCHED,
+        code: 'PROFILES_FETCHED',
+        data: mockUsers,
+      });
     });
   });
 });
