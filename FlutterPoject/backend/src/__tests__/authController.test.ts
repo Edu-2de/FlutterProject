@@ -18,6 +18,7 @@ jest.mock('../services/UserService', () => ({
   UserService: {
     findUserByEmail: jest.fn(),
     createUser: jest.fn(),
+    findUserById: jest.fn(),
   },
 }));
 
@@ -265,7 +266,7 @@ describe('AuthController', () => {
         role: 'customer',
       };
 
-      mockUserService.findUserById.mockResolvedValue(null); 
+      mockUserService.findUserById.mockResolvedValue(null);
 
       await AuthController.getUserProfile(mockReq, mockRes, mockNext);
 
@@ -307,6 +308,36 @@ describe('AuthController', () => {
 
       expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
       expect(mockNext).toHaveBeenCalledWith(serviceError);
+    });
+  });
+
+  describe('getUserProfileById', () => {
+    it('should get user profile successfully', async () => {
+      const mockUser = {
+        id: 1,
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '123456789',
+        role: 'customer',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
+
+      mockReq.params = { userId: '1' };
+
+      mockUserService.findUserById.mockResolvedValueOnce(mockUser);
+
+      await AuthController.getUserProfileById(mockReq, mockRes, mockNext);
+
+      expect(mockUserService.findUserById).toHaveBeenCalledWith(1);
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        message: messages.success.PROFILE_FETCHED,
+        code: 'PROFILE_FETCHED',
+        data: mockUser,
+      });
     });
   });
 });
