@@ -435,5 +435,20 @@ describe('AuthController', () => {
         data: mockUsers,
       });
     });
+
+    it('should return an error if user profiles are not found', async () => {
+      mockUserService.getUsersProfile.mockResolvedValueOnce(null);
+
+      await AuthController.getAllUsersProfile(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith({
+        status: 404,
+        message: messages.errors.USERS_NOT_FOUND,
+        code: 'USERS_NOT_FOUND',
+      });
+
+      expect(mockRes.status).not.toHaveBeenCalled();
+      expect(mockRes.json).not.toHaveBeenCalled();
+    });
   });
 });
