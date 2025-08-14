@@ -339,5 +339,18 @@ describe('AuthController', () => {
         data: mockUser,
       });
     });
+
+    it('should return an error if user is not authenticated', async () => {
+      mockReq.params = {userId: undefined};
+
+      await AuthController.getUserProfileById(mockReq, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith({
+        status: 401,
+        message: messages.errors.UNAUTHORIZED_ACCESS,
+        code: 'UNAUTHORIZED_ACCESS',
+      });
+      expect(mockUserService.findUserById).not.toHaveBeenCalled();
+    });
   });
 });
