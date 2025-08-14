@@ -3,6 +3,16 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { UserService } from '../services/UserService';
 import { messages } from '../utils/messages';
+import pool from '../database/connection';
+
+jest.mock('../database/connection', () => ({
+  __esModule: true,
+  default: {
+    query: jest.fn(),
+  },
+}));
+
+const mockPool = pool as jest.Mocked<typeof pool>;
 
 jest.mock('bcryptjs', () => ({
   hash: jest.fn(),
@@ -449,6 +459,69 @@ describe('AuthController', () => {
 
       expect(mockRes.status).not.toHaveBeenCalled();
       expect(mockRes.json).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateUserProfile', () => {
+    it('should be able to successfully update the user', async () => {
+      const mockUser = {
+        id: 1,
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '123456789',
+        role: 'customer',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
+
+      const updatedUser = {
+        id: 1,
+        first_name: 'Jonas',
+        last_name: 'Kobe',
+        email: 'jonas.doe@example.com',
+        phone: '987654321',
+        role: 'customer',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+      };
+
+      mockReq.user = {
+        id: 1,
+        email: 'john.doe@example.com',
+        role: 'customer',
+      };
+
+      mockReq.body = {
+        first_name: 'Jonas',
+        last_name: 'Kobe',
+        email: 'jonas.doe@example.com',
+        phone: '987654321',
+        password: 'Abc1234@#',
+      };
+
+      mockUserService.findUserById.mockResolvedValue(mockUser);
+      mockUserService.findUserByEmail.mockResolvedValueOnce(null);
+      mockUserService.findUserByPhone.mockResolvedValueOnce(null);
+      (mockBcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+
+      (mockPool.query as jest.Mock).mockResolvedValue({ rows: [updatedUser] } as any);
+
+      await AuthController.updateUserProfile(mockReq, mockRes, mockNext);
+
+   
+      console.log('mockNext calls:', mockNext.mock.calls);
+      console.log('mockRes.json calls:', mockRes.json.mock.calls);
+      console.log('mockRes.status calls:', mockRes.status.mock.calls);
+
+
+      expect(mockNext).not.toHaveBeenCalled();
+
+   
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User updated successfully',
+        user: updatedUser,
+      });
     });
   });
 });
