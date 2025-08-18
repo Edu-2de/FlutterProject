@@ -321,7 +321,7 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'User updated successfully',
+        message: messages.success.USER_UPDATED,
         code: 'USER_UPDATED',
         data: updatedUser,
       });
@@ -355,7 +355,8 @@ export class AuthController {
       UserService.deleteUserProfile(userId);
 
       res.json({
-        message: 'User deleted successfully',
+        message: messages.success.USER_DELETED,
+        code: 'USER_DELETED',
         user: userProfile,
       });
     } catch (error) {
@@ -388,7 +389,8 @@ export class AuthController {
       UserService.deleteUserProfile(userId);
 
       res.json({
-        message: 'User deleted successfully',
+        message: messages.success.USER_DELETED,
+        code: 'USER_DELETED',
         user: userProfile,
       });
     } catch (error) {

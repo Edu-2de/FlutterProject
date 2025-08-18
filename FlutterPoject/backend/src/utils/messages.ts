@@ -27,5 +27,6 @@ export const messages = {
     PROFILE_FETCHED: 'The user profile was successfully retrieved.',
     PROFILES_FETCHED: 'User profiles were successfully found',
     USER_UPDATED: 'User updated successfully',
+    USER_DELETED: 'User deleted successfully',
   },
 };
