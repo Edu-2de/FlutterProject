@@ -23,7 +23,7 @@ export class UserService {
 
   static async getUsersProfile() {
     const result = await pool.query(`SELECT * FROM users`);
-    return result.rows[0];
+    return result.rows;
   }
 
   static async findUserByPhone(phone: string) {
@@ -36,7 +36,6 @@ export class UserService {
     const values = [];
     let idx = 1;
 
-    // Processa cada campo que pode ser atualizado
     if (updateData.first_name !== undefined) {
       fields.push(`first_name = $${idx++}`);
       values.push(updateData.first_name);
@@ -68,11 +67,9 @@ export class UserService {
       values.push(updateData.role);
     }
 
-  
     fields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(userId);
 
- 
     if (fields.length === 1) {
       return await this.findUserById(userId);
     }
@@ -84,5 +81,26 @@ export class UserService {
 
   static async deleteUserProfile(userId: number) {
     const result = await pool.query(`DELETE FROM users WHERE id = $1`, [userId]);
+    return result.rows[0];
+  }
+
+  static async validateUniqueFields(email: string | undefined, phone: string | undefined, userId: number) {
+    const errors = [];
+
+    if (email) {
+      const emailExists = await this.findUserByEmailExcludingId(email, userId);
+      if (emailExists) {
+        errors.push({ field: 'email', code: 'EMAIL_ALREADY_EXISTS' });
+      }
+    }
+
+    if (phone) {
+      const phoneExists = await this.findUserByPhoneExcludingId(phone, userId);
+      if (phoneExists) {
+        errors.push({ field: 'phone', code: 'PHONE_ALREADY_EXISTS' });
+      }
+    }
+
+    return errors;
   }
 }
