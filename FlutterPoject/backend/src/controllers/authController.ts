@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { messages } from '../utils/messages';
-import { registerSchema, loginSchema } from '../validators/authValidators';
+import { updateUserSchema, registerSchema, loginSchema } from '../validators/authValidators';
 import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
@@ -231,8 +231,16 @@ export class AuthController {
         };
       }
 
-      const userProfile = await UserService.findUserById(userId);
+      const { error, value } = updateUserSchema.validate(req.body);
+      if (error) {
+        throw {
+          status: 400,
+          message: error.details[0].message,
+          code: 'VALIDATION_ERROR',
+        };
+      }
 
+      const userProfile = await UserService.findUserById(userId);
       if (!userProfile) {
         throw {
           status: 404,
@@ -241,83 +249,27 @@ export class AuthController {
         };
       }
 
-      const { first_name, last_name, email, phone, password } = req.body;
+      const uniqueFieldErrors = await UserService.validateUniqueFields(value.email, value.phone, userId);
 
-      if (email && !isValidEmail(email)) {
+      if (uniqueFieldErrors.length > 0) {
+        const firstError = uniqueFieldErrors[0];
         throw {
-          status: 400,
-          message: messages.errors.INVALID_EMAIL_FORMAT,
-          code: 'INVALID_EMAIL_FORMAT',
+          status: 409,
+          message: messages.errors[firstError.code as keyof typeof messages.errors],
+          code: firstError.code,
         };
       }
 
-      if (password && !isValidPassword(password)) {
-        throw {
-          status: 400,
-          message: messages.errors.INVALID_PASSWORD_FORMAT,
-          code: 'INVALID_PASSWORD_FORMAT',
-        };
-      }
+      // Atualiza o usuário
+      const updatedUser = await UserService.updateUser(userId, value);
 
-      if (email) {
-        const userEmail = await UserService.findUserByEmail(email);
-        if (userEmail) {
-          throw {
-            status: 409,
-            message: messages.errors.EMAIL_ALREADY_EXISTS,
-            code: 'EMAIL_ALREADY_EXISTS',
-          };
-        }
-      }
+      logger.info(`User profile updated successfully: ${updatedUser.email}`);
 
-      if (phone) {
-        const userPhone = await UserService.findUserByPhone(phone);
-        if (userPhone) {
-          throw {
-            status: 409,
-            message: messages.errors.PHONE_ALREADY_EXISTS,
-            code: 'PHONE_ALREADY_EXISTS',
-          };
-        }
-      }
-
-      const fields = [];
-      const values = [];
-      let idx = 1;
-
-      if (first_name) {
-        fields.push(`first_name = $${idx++}`);
-        values.push(first_name);
-      }
-
-      if (last_name) {
-        fields.push(`last_name = $${idx++}`);
-        values.push(last_name);
-      }
-
-      if (email) {
-        fields.push(`email = $${idx++}`);
-      }
-
-      if (phone) {
-        fields.push(`phone = $${idx++}`);
-      }
-
-      if (password) {
-        fields.push(`password_hash = $${idx++}`);
-        const password_hash = await bcrypt.hash(password, 10);
-        values.push(password_hash);
-      }
-
-      fields.push(`update_at = CURRENT_TIMESTAMP`);
-      values.push(userId);
-
-      const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
-      const result = await pool.query(query, values);
-
-      res.json({
+      res.status(200).json({
+        success: true,
         message: 'User updated successfully',
-        user: result.rows[0],
+        code: 'USER_UPDATED',
+        data: updatedUser,
       });
     } catch (error) {
       next(error);
@@ -330,14 +282,24 @@ export class AuthController {
 
       if (!userId) {
         throw {
-          status: 401,
-          message: messages.errors.UNAUTHORIZED_ACCESS,
-          code: 'UNAUTHORIZED_ACCESS',
+          status: 400,
+          message: 'Invalid user ID',
+          code: 'INVALID_USER_ID',
         };
       }
 
-      const userProfile = await UserService.findUserById(userId);
 
+      const { error, value } = updateUserSchema.validate(req.body);
+      if (error) {
+        throw {
+          status: 400,
+          message: error.details[0].message,
+          code: 'VALIDATION_ERROR',
+        };
+      }
+
+
+      const userProfile = await UserService.findUserById(userId);
       if (!userProfile) {
         throw {
           status: 404,
@@ -346,98 +308,28 @@ export class AuthController {
         };
       }
 
-      const { first_name, last_name, email, phone, password, role } = req.body;
+ 
+      const uniqueFieldErrors = await UserService.validateUniqueFields(value.email, value.phone, userId);
 
-      if (email && !isValidEmail(email)) {
+      if (uniqueFieldErrors.length > 0) {
+        const firstError = uniqueFieldErrors[0];
         throw {
-          status: 400,
-          message: messages.errors.INVALID_EMAIL_FORMAT,
-          code: 'INVALID_EMAIL_FORMAT',
+          status: 409,
+          message: messages.errors[firstError.code as keyof typeof messages.errors],
+          code: firstError.code,
         };
       }
 
-      if (password && !isValidPassword(password)) {
-        throw {
-          status: 400,
-          message: messages.errors.INVALID_PASSWORD_FORMAT,
-          code: 'INVALID_PASSWORD_FORMAT',
-        };
-      }
 
-      if (email) {
-        const userEmail = await UserService.findUserByEmail(email);
-        if (userEmail) {
-          throw {
-            status: 409,
-            message: messages.errors.EMAIL_ALREADY_EXISTS,
-            code: 'EMAIL_ALREADY_EXISTS',
-          };
-        }
-      }
+      const updatedUser = await UserService.updateUser(userId, value);
 
-      if (phone) {
-        const userPhone = await UserService.findUserByPhone(phone);
-        if (userPhone) {
-          throw {
-            status: 409,
-            message: messages.errors.PHONE_ALREADY_EXISTS,
-            code: 'PHONE_ALREADY_EXISTS',
-          };
-        }
-      }
+      logger.info(`User profile updated by admin: ${updatedUser.email}`);
 
-      if (role) {
-        if (role !== 'admin' && role !== 'manager' && role !== 'customer') {
-          throw {
-            status: 400,
-            message: messages.errors.INVALID_ROLE,
-            code: 'INVALID_ROLE',
-          };
-        }
-      }
-
-      const fields = [];
-      const values = [];
-      let idx = 1;
-
-      if (first_name) {
-        fields.push(`first_name = $${idx++}`);
-        values.push(first_name);
-      }
-
-      if (last_name) {
-        fields.push(`last_name = $${idx++}`);
-        values.push(last_name);
-      }
-
-      if (email) {
-        fields.push(`email = $${idx++}`);
-      }
-
-      if (phone) {
-        fields.push(`phone = $${idx++}`);
-      }
-
-      if (password) {
-        fields.push(`password_hash = $${idx++}`);
-        const password_hash = await bcrypt.hash(password, 10);
-        values.push(password_hash);
-      }
-
-      if (role) {
-        fields.push(`role = $${idx++}`);
-        values.push(role);
-      }
-
-      fields.push(`update_at = CURRENT_TIMESTAMP`);
-      values.push(userId);
-
-      const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
-      const result = await pool.query(query, values);
-
-      res.json({
+      res.status(200).json({
+        success: true,
         message: 'User updated successfully',
-        user: result.rows[0],
+        code: 'USER_UPDATED',
+        data: updatedUser,
       });
     } catch (error) {
       next(error);
