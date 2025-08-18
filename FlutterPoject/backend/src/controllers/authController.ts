@@ -265,7 +265,7 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'User updated successfully',
+        message: messages.success.USER_UPDATED,
         code: 'USER_UPDATED',
         data: updatedUser,
       });
@@ -281,11 +281,10 @@ export class AuthController {
       if (!userId) {
         throw {
           status: 400,
-          message: 'Invalid user ID',
+          message: messages.errors.INVALID_USER_ID,
           code: 'INVALID_USER_ID',
         };
       }
-
 
       const { error, value } = updateUserSchema.validate(req.body);
       if (error) {
@@ -296,7 +295,6 @@ export class AuthController {
         };
       }
 
-
       const userProfile = await UserService.findUserById(userId);
       if (!userProfile) {
         throw {
@@ -306,7 +304,6 @@ export class AuthController {
         };
       }
 
- 
       const uniqueFieldErrors = await UserService.validateUniqueFields(value.email, value.phone, userId);
 
       if (uniqueFieldErrors.length > 0) {
@@ -317,7 +314,6 @@ export class AuthController {
           code: firstError.code,
         };
       }
-
 
       const updatedUser = await UserService.updateUser(userId, value);
 
