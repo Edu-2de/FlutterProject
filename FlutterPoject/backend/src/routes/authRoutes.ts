@@ -7,9 +7,9 @@ const router = Router();
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 
-router.get('/', AuthController.getUserProfile);
-router.get('/:userId', AuthController.getUserProfileById);
-router.get('/all', AuthController.getAllUsersProfile);
+router.get('/', AuthMiddleware.authenticateToken, AuthController.getUserProfile);
+router.get('/:userId', AuthMiddleware.requireAdmin, AuthController.getUserProfileById);
+router.get('/all', AuthMiddleware.requireAdmin, AuthController.getAllUsersProfile);
 
 router.patch('/', AuthController.updateUserProfile);
 router.patch('/:userId', AuthController.updateUserProfileById);
