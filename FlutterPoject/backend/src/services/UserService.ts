@@ -12,6 +12,16 @@ export class UserService {
     return result.rows[0];
   }
 
+  static async findUserByPhone(phone: string) {
+    const result = await pool.query(`SELECT * FROM users WHERE phone = $1`, [phone]);
+    return result.rows[0];
+  }
+
+  static async findUserByPhoneExcludingId(phone: string, userId: number) {
+    const result = await pool.query(`SELECT * FROM users WHERE phone = $1 AND id != $2`, [phone, userId]);
+    return result.rows[0];
+  }
+
   static async createUser(first_name: string, last_name: string, email: string, phone: string, password_hash: string) {
     const result = await pool.query(
       `INSERT INTO users(first_name, last_name, email, phone, password_hash, created_at) 
@@ -29,11 +39,6 @@ export class UserService {
   static async getUsersProfile() {
     const result = await pool.query(`SELECT * FROM users`);
     return result.rows;
-  }
-
-  static async findUserByPhone(phone: string) {
-    const result = await pool.query(`SELECT * FROM users WHERE phone = $1`, [phone]);
-    return result.rows[0];
   }
 
   static async updateUser(userId: number, updateData: any) {
