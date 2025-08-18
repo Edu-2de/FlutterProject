@@ -7,7 +7,6 @@ import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
 import { isValidEmail, isValidPassword } from '../utils/validators';
-import pool from '../database/connection';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -260,7 +259,6 @@ export class AuthController {
         };
       }
 
-      // Atualiza o usuário
       const updatedUser = await UserService.updateUser(userId, value);
 
       logger.info(`User profile updated successfully: ${updatedUser.email}`);
