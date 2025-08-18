@@ -12,21 +12,21 @@ if (!JWT_SECRET) {
 export class userAddressesController {
   static addAddress = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { error } = userAddressesSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
-
       const userId = req.user?.id;
       if (!userId) {
         throw {
           status: 401,
           message: messages.errors.UNAUTHORIZED_ACCESS,
           code: 'UNAUTHORIZED_ACCESS',
+        };
+      }
+
+      const { error } = userAddressesSchema.validate(req.body);
+      if (error) {
+        throw {
+          status: 400,
+          message: error.details[0].message,
+          code: 'VALIDATION_ERROR',
         };
       }
 
@@ -40,7 +40,7 @@ export class userAddressesController {
         };
       }
 
-      const { address_type, street_address, city, state, postal_code, country } = req.body;
+      
 
     } catch (error) {
       next(error);
