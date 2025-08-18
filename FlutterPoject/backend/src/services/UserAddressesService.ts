@@ -2,6 +2,7 @@ import pool from '../database/connection';
 
 export class UserAddressesService {
   static async addAddress(
+    user_id: number,
     address_type: string,
     street_address: string,
     city: string,
@@ -10,8 +11,8 @@ export class UserAddressesService {
     country: string
   ) {
     const result = await pool.query(
-      `INSERT INTO user_addresses(address_type, street_address, city, state, postal_code, country, created_at) VALUES($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP) RETURNING *`,
-      [address_type, street_address, city, state, postal_code, country]
+      `INSERT INTO user_addresses(user_id, address_type, street_address, city, state, postal_code, country, created_at) VALUES($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) RETURNING *`,
+      [user_id, address_type, street_address, city, state, postal_code, country]
     );
     return result.rows[0];
   }
