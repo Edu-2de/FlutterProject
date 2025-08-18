@@ -1,14 +1,38 @@
 import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
+import { setupDB, testConnection } from './database/setup';
+import authRoutes from './routes/authRoutes';
+
+
 dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello, TypeScript + Express!');
-});
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+const startServer = async () => {
+  try {
+    console.log('Starting server...');
+
+    await testConnection();
+    console.log('Database connection successful');
+
+    await setupDB();
+    console.log('Database setup completed');
+
+    app.use('/user', authRoutes);
+    app.listen(PORT, () => {
+      console.log('Server running on port: ' + PORT);
+      console.log(`Test DB: http://localhost:${PORT}/test-db`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
