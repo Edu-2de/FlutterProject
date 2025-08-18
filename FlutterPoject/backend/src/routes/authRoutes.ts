@@ -10,3 +10,6 @@ router.post('/login', AuthController.login);
 router.get('/', AuthController.getUserProfile);
 router.get('/:userId', AuthController.getUserProfileById);
 router.get('/all', AuthController.getAllUsersProfile);
+
+router.patch('/', AuthController.updateUserProfile);
+router.patch('/:userId', AuthController.updateUserProfileById);
