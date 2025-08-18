@@ -11,8 +11,8 @@ router.get('/', AuthMiddleware.authenticateToken, AuthController.getUserProfile)
 router.get('/:userId', AuthMiddleware.requireAdmin, AuthController.getUserProfileById);
 router.get('/all', AuthMiddleware.requireAdmin, AuthController.getAllUsersProfile);
 
-router.patch('/', AuthController.updateUserProfile);
-router.patch('/:userId', AuthController.updateUserProfileById);
+router.patch('/', AuthMiddleware.authenticateToken, AuthController.updateUserProfile);
+router.patch('/:userId', AuthMiddleware.requireAdmin, AuthController.updateUserProfileById);
 
 router.delete('/', AuthController.getUserProfile);
 router.delete('/:userId', AuthController.getUserProfileById);
