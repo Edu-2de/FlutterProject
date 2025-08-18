@@ -13,3 +13,6 @@ router.get('/all', AuthController.getAllUsersProfile);
 
 router.patch('/', AuthController.updateUserProfile);
 router.patch('/:userId', AuthController.updateUserProfileById);
+
+router.delete('/', AuthController.getUserProfile);
+router.delete('/:userId', AuthController.getUserProfileById);
