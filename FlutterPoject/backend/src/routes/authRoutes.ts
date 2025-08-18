@@ -9,3 +9,4 @@ router.post('/login', AuthController.login);
 
 router.get('/', AuthController.getUserProfile);
 router.get('/:userId', AuthController.getUserProfileById);
+router.get('/all', AuthController.getAllUsersProfile);
