@@ -7,6 +7,11 @@ export class UserService {
     return result.rows[0];
   }
 
+  static async findUserByEmailExcludingId(email: string, userId: number) {
+    const result = await pool.query(`SELECT * FROM users WHERE email = $1 AND id != $2`, [email, userId]);
+    return result.rows[0];
+  }
+
   static async createUser(first_name: string, last_name: string, email: string, phone: string, password_hash: string) {
     const result = await pool.query(
       `INSERT INTO users(first_name, last_name, email, phone, password_hash, created_at) 
