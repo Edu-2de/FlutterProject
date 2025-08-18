@@ -7,7 +7,6 @@ import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
 import { isValidEmail, isValidPassword } from '../utils/validators';
-import pool from '../database/connection';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -260,14 +259,13 @@ export class AuthController {
         };
       }
 
-      // Atualiza o usuário
       const updatedUser = await UserService.updateUser(userId, value);
 
       logger.info(`User profile updated successfully: ${updatedUser.email}`);
 
       res.status(200).json({
         success: true,
-        message: 'User updated successfully',
+        message: messages.success.USER_UPDATED,
         code: 'USER_UPDATED',
         data: updatedUser,
       });
@@ -283,11 +281,10 @@ export class AuthController {
       if (!userId) {
         throw {
           status: 400,
-          message: 'Invalid user ID',
+          message: messages.errors.INVALID_USER_ID,
           code: 'INVALID_USER_ID',
         };
       }
-
 
       const { error, value } = updateUserSchema.validate(req.body);
       if (error) {
@@ -298,7 +295,6 @@ export class AuthController {
         };
       }
 
-
       const userProfile = await UserService.findUserById(userId);
       if (!userProfile) {
         throw {
@@ -308,7 +304,6 @@ export class AuthController {
         };
       }
 
- 
       const uniqueFieldErrors = await UserService.validateUniqueFields(value.email, value.phone, userId);
 
       if (uniqueFieldErrors.length > 0) {
@@ -320,14 +315,13 @@ export class AuthController {
         };
       }
 
-
       const updatedUser = await UserService.updateUser(userId, value);
 
       logger.info(`User profile updated by admin: ${updatedUser.email}`);
 
       res.status(200).json({
         success: true,
-        message: 'User updated successfully',
+        message: messages.success.USER_UPDATED,
         code: 'USER_UPDATED',
         data: updatedUser,
       });
@@ -361,7 +355,8 @@ export class AuthController {
       UserService.deleteUserProfile(userId);
 
       res.json({
-        message: 'User deleted successfully',
+        message: messages.success.USER_DELETED,
+        code: 'USER_DELETED',
         user: userProfile,
       });
     } catch (error) {
@@ -394,7 +389,8 @@ export class AuthController {
       UserService.deleteUserProfile(userId);
 
       res.json({
-        message: 'User deleted successfully',
+        message: messages.success.USER_DELETED,
+        code: 'USER_DELETED',
         user: userProfile,
       });
     } catch (error) {

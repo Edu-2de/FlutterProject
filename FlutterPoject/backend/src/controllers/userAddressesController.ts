@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import { messages } from '../utils/messages';
 import { UserService } from '../services/UserService';
+import { UserAddressesService } from '../services/UserAddressesService';
 import { userAddressesSchema } from '../validators/userAddressesValidators';
+import logger from '../utils/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -12,15 +13,6 @@ if (!JWT_SECRET) {
 export class userAddressesController {
   static addAddress = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { error } = userAddressesSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
-
       const userId = req.user?.id;
       if (!userId) {
         throw {
@@ -30,8 +22,16 @@ export class userAddressesController {
         };
       }
 
-      const userProfile = await UserService.findUserById(userId);
+      const { error } = userAddressesSchema.validate(req.body);
+      if (error) {
+        throw {
+          status: 400,
+          message: error.details[0].message,
+          code: 'VALIDATION_ERROR',
+        };
+      }
 
+      const userProfile = await UserService.findUserById(userId);
       if (!userProfile) {
         throw {
           status: 404,
@@ -41,6 +41,26 @@ export class userAddressesController {
       }
 
       const { address_type, street_address, city, state, postal_code, country } = req.body;
+
+      const addAddress = await UserAddressesService.addAddress(
+        userId,
+        address_type,
+        street_address,
+        city,
+        state,
+        postal_code,
+        country
+      );
+
+      logger.info(`Address added successfully for user: ${userProfile.email}`);
+
+      res.status(201).json({
+        success: true,
+        message: 'Address added successfully',
+        code: 'ADDRESS_ADDED',
+        data: addAddress,
+      });
+
 
     } catch (error) {
       next(error);
