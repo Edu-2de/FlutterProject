@@ -31,7 +31,6 @@ export class userAddressesController {
       }
 
       const userProfile = await UserService.findUserById(userId);
-
       if (!userProfile) {
         throw {
           status: 404,
@@ -40,7 +39,7 @@ export class userAddressesController {
         };
       }
 
-      
+      const addAddress = await UserAddressesService
 
     } catch (error) {
       next(error);
