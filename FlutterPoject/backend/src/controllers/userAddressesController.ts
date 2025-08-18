@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { messages } from '../utils/messages';
 import { UserService } from '../services/UserService';
-import { registerSchema, loginSchema } from '../validators/authValidators';
+import { userAddressesSchema } from '../validators/userAddressesValidators';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -12,7 +12,7 @@ if (!JWT_SECRET) {
 export class userAddressesController {
   static addAddress = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { error } = registerSchema.validate(req.body);
+      const { error } = userAddressesSchema.validate(req.body);
       if (error) {
         throw {
           status: 400,
