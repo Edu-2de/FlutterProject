@@ -3,12 +3,8 @@ import { messages } from '../utils/messages';
 import { UserService } from '../services/UserService';
 import { UserAddressesService } from '../services/UserAddressesService';
 import { userAddressesSchema } from '../validators/userAddressesValidators';
+import { ValidationHelpers } from '../utils/validationHelpers';
 import logger from '../utils/logger';
-
-const JWT_SECRET = process.env.JWT_SECRET || '';
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined in the environment variables');
-}
 
 export class userAddressesController {
   static addAddress = async (req: any, res: Response, next: NextFunction): Promise<void> => {
