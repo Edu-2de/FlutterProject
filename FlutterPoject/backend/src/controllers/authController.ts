@@ -90,6 +90,21 @@ export class AuthController {
     }
   };
 
+  static getAllUsers = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const usersProfile = await ValidationHelpers.validateUsersExists();
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PROFILES_FETCHED,
+        code: 'PROFILES_FETCHED',
+        data: usersProfile,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   static updateUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserIdSmart(req);
@@ -189,6 +204,32 @@ export class AuthController {
             role: user.role,
           },
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static changePassword = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = ValidationHelpers.validateUserIdSmart(req);
+      const user = await ValidationHelpers.validateUserExists(userId);
+
+      const { currentPassword, newPassword } = req.body;
+
+      await ValidationHelpers.validateUserCredentials(user.email, currentPassword);
+
+      ValidationHelpers.validatePasswordFormat(newPassword);
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      await UserService.updateUser(userId, { password: newPassword });
+
+      logger.info(`Password changed for user: ${user.email}`);
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.PASSWORD_UPDATED,
+        code: 'PASSWORD_UPDATED',
       });
     } catch (error) {
       next(error);
