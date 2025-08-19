@@ -74,6 +74,68 @@ export class AuthController {
     }
   };
 
+  static logout = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const token = req.headers.authorization?.split(' ')[1];
+      if (token) {
+        const decoded: any = jwt.decode(token);
+        const now = Math.floor(Date.now() / 1000);
+        const expSeconds = (decoded?.exp || now) - now;
+        if (expSeconds > 0) {
+          await blacklistToken(token, expSeconds);
+        }
+      }
+      res.status(200).json({
+        success: true,
+        message: messages.success.LOGOUT_SUCCESS,
+        code: 'LOGOUT_SUCCESS',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static refreshToken = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = ValidationHelpers.validateUserIdSmart(req);
+      const user = await ValidationHelpers.validateUserExists(userId);
+
+      const newToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '15m' });
+
+      res.status(200).json({
+        success: true,
+        message: 'Token refreshed successfully',
+        code: 'TOKEN_REFRESHED',
+        data: { token: newToken },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static verifyToken = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = ValidationHelpers.validateUserIdSmart(req);
+      const user = await ValidationHelpers.validateUserExists(userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Token is valid',
+        code: 'TOKEN_VALID',
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.first_name,
+            role: user.role,
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   static getUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserIdSmart(req);
@@ -142,68 +204,6 @@ export class AuthController {
         message: messages.success.USER_DELETED,
         code: 'USER_DELETED',
         data: userProfile,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  static logout = async (req: any, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if (token) {
-        const decoded: any = jwt.decode(token);
-        const now = Math.floor(Date.now() / 1000);
-        const expSeconds = (decoded?.exp || now) - now;
-        if (expSeconds > 0) {
-          await blacklistToken(token, expSeconds);
-        }
-      }
-      res.status(200).json({
-        success: true,
-        message: messages.success.LOGOUT_SUCCESS,
-        code: 'LOGOUT_SUCCESS',
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  static refreshToken = async (req: any, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = ValidationHelpers.validateUserIdSmart(req);
-      const user = await ValidationHelpers.validateUserExists(userId);
-
-      const newToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '15m' });
-
-      res.status(200).json({
-        success: true,
-        message: 'Token refreshed successfully',
-        code: 'TOKEN_REFRESHED',
-        data: { token: newToken },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  static verifyToken = async (req: any, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = ValidationHelpers.validateUserIdSmart(req);
-      const user = await ValidationHelpers.validateUserExists(userId);
-
-      res.status(200).json({
-        success: true,
-        message: 'Token is valid',
-        code: 'TOKEN_VALID',
-        data: {
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.first_name,
-            role: user.role,
-          },
-        },
       });
     } catch (error) {
       next(error);
