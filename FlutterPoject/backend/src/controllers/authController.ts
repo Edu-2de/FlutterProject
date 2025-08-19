@@ -45,9 +45,8 @@ export class AuthController {
     try {
       ValidationHelpers.validateSchema(loginSchema, req.body);
       const { email, password } = req.body;
-      const user = await ValidationHelpers.validateEmailExists(email);
 
-      ValidationHelpers.validateIfCorrectPassword(user.id, password);
+      const user = await ValidationHelpers.validateUserCredentials(email, password);
 
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
         expiresIn: '15m',

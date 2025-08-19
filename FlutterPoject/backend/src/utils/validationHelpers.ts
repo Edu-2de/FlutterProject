@@ -64,18 +64,6 @@ export class ValidationHelpers {
     }
   }
 
-  static async validateEmailExists(email: string) {
-    const userProfile = await UserService.findUserByEmail(email);
-    if (!userProfile) {
-      throw {
-        status: 404,
-        message: messages.errors.USER_NOT_FOUND,
-        code: 'USER_NOT_FOUND',
-      };
-    }
-    return userProfile;
-  }
-
   static async validatePhoneNotExists(phone: string): Promise<void> {
     const userProfile = await UserService.findUserByEmail(phone);
     if (userProfile) {
@@ -87,10 +75,17 @@ export class ValidationHelpers {
     }
   }
 
-  static async validateIfCorrectPassword(userId: number, password: string) {
-    const userProfile = await UserService.findUserById(userId);
+  static async validateUserCredentials(email: string, password: string) {
+    const user = await UserService.findUserByEmail(email);
+    if (!user) {
+      throw {
+        status: 401,
+        message: messages.errors.INVALID_CREDENTIALS,
+        code: 'INVALID_CREDENTIALS',
+      };
+    }
 
-    const isPasswordCorrect = await bcrypt.compare(password, userProfile.password);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordCorrect) {
       throw {
         status: 401,
@@ -98,6 +93,8 @@ export class ValidationHelpers {
         code: 'INVALID_CREDENTIALS',
       };
     }
+
+    return user;
   }
 
   // ========== Schema Validations ==========
