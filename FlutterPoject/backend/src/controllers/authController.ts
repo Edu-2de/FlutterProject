@@ -95,14 +95,6 @@ export class AuthController {
       const userId = ValidationHelpers.validateUserIdFromParams(req);
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
-      if (!userProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USER_NOT_FOUND,
-          code: 'USER_NOT_FOUND',
-        };
-      }
-
       res.status(200).json({
         success: true,
         message: messages.success.PROFILE_FETCHED,
@@ -132,7 +124,7 @@ export class AuthController {
   static updateUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserFromToken(req);
-      ValidationHelpers.validateSchema(updateUserSchema, req);
+      ValidationHelpers.validateSchema(updateUserSchema, req.body);
       await ValidationHelpers.validateUserExists(userId);
 
       const { first_name, last_name, email, phone, password, role } = req.body;
@@ -157,7 +149,7 @@ export class AuthController {
   static updateUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserIdFromParams(req);
-      ValidationHelpers.validateSchema(updateUserSchema, req);
+      ValidationHelpers.validateSchema(updateUserSchema, req.body);
       await ValidationHelpers.validateUserExists(userId);
 
       const { first_name, last_name, email, phone, password, role } = req.body;
@@ -184,7 +176,7 @@ export class AuthController {
       const userId = ValidationHelpers.validateUserFromToken(req);
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
-      UserService.deleteUserProfile(userId);
+      await UserService.deleteUserProfile(userId);
 
       res.json({
         message: messages.success.USER_DELETED,
@@ -201,7 +193,7 @@ export class AuthController {
       const userId = ValidationHelpers.validateUserIdFromParams(req);
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
-      UserService.deleteUserProfile(userId);
+      await UserService.deleteUserProfile(userId);
 
       res.json({
         message: messages.success.USER_DELETED,
