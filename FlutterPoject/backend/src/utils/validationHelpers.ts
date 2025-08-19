@@ -40,7 +40,7 @@ export class ValidationHelpers {
     return userProfile;
   }
 
-  static async validateEmailExists(email: string) {
+  static async validateEmailNotExists(email: string): Promise<void> {
     const userProfile = await UserService.findUserByEmail(email);
     if (userProfile) {
       throw {
@@ -49,7 +49,29 @@ export class ValidationHelpers {
         code: 'EMAIL_ALREADY_EXISTS',
       };
     }
+  }
+
+  static async validateEmailExists(email: string) {
+    const userProfile = await UserService.findUserByEmail(email);
+    if (!userProfile) {
+      throw {
+        status: 404,
+        message: messages.errors.USER_NOT_FOUND,
+        code: 'USER_NOT_FOUND',
+      };
+    }
     return userProfile;
+  }
+
+  static async validatePhoneNotExists(phone: string): Promise<void> {
+    const userProfile = await UserService.findUserByEmail(phone);
+    if (userProfile) {
+      throw {
+        status: 409,
+        message: messages.errors.EMAIL_ALREADY_EXISTS,
+        code: 'EMAIL_ALREADY_EXISTS',
+      };
+    }
   }
 
   // ========== Schema Validations ==========

@@ -16,28 +16,15 @@ if (!JWT_SECRET) {
 export class AuthController {
   static register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { error } = registerSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
+      ValidationHelpers.validateSchema(registerSchema, req.body);
 
       const { first_name, last_name = '', email, phone, password } = req.body;
 
-      ValidationHelpers.isValidEmail(email)
-      ValidationHelpers.isValidPassword(password)
+      ValidationHelpers.isValidEmail(email);
+      ValidationHelpers.isValidPassword(password);
 
-      const checkEmail = await UserService.findUserByEmail(email);
-      if (checkEmail) {
-        throw {
-          status: 409,
-          message: messages.errors.EMAIL_ALREADY_EXISTS,
-          code: 'EMAIL_ALREADY_EXISTS',
-        };
-      }
+      await ValidationHelpers.validateEmailNotExists(email);
+      await ValidationHelpers.validatePhoneNotExists(email);
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
