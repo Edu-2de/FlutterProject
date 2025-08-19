@@ -143,4 +143,35 @@ export class ValidationHelpers {
       };
     }
   }
+
+  static async validateUniqueFields(
+    email: string | undefined,
+    phone: string | undefined,
+    userId: number
+  ): Promise<void> {
+    const errors = [];
+
+    if (email) {
+      const emailExists = await UserService.findUserByEmailExcludingId(email, userId);
+      if (emailExists) {
+        errors.push({ field: 'email', code: 'EMAIL_ALREADY_EXISTS' });
+      }
+    }
+
+    if (phone) {
+      const phoneExists = await UserService.findUserByPhoneExcludingId(phone, userId);
+      if (phoneExists) {
+        errors.push({ field: 'phone', code: 'PHONE_ALREADY_EXISTS' });
+      }
+    }
+
+    if (errors.length > 0) {
+      const firstError = errors[0];
+      throw {
+        status: 409,
+        message: messages.errors[firstError.code as keyof typeof messages.errors],
+        code: firstError.code,
+      };
+    }
+  }
 }

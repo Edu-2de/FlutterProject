@@ -16,7 +16,6 @@ export class AuthController {
   static register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       ValidationHelpers.validateSchema(registerSchema, req.body);
-
       const { first_name, last_name = '', email, phone, password } = req.body;
 
       ValidationHelpers.isValidEmail(email);
@@ -45,9 +44,7 @@ export class AuthController {
   static login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       ValidationHelpers.validateSchema(loginSchema, req.body);
-
       const { email, password } = req.body;
-
       const user = await ValidationHelpers.validateEmailExists(email);
 
       ValidationHelpers.validateIfCorrectPassword(user.id, password);
@@ -80,7 +77,6 @@ export class AuthController {
   static getUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserFromToken(req);
-
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       res.status(200).json({
@@ -97,7 +93,6 @@ export class AuthController {
   static getUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserIdFromParams(req);
-
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       if (!userProfile) {
@@ -136,46 +131,15 @@ export class AuthController {
 
   static updateUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = req.user?.id;
+      const userId = ValidationHelpers.validateUserFromToken(req);
+      ValidationHelpers.validateSchema(updateUserSchema, req);
+      const userProfile = await ValidationHelpers.validateUserExists(userId);
 
-      if (!userId) {
-        throw {
-          status: 401,
-          message: messages.errors.UNAUTHORIZED_ACCESS,
-          code: 'UNAUTHORIZED_ACCESS',
-        };
-      }
+      const { first_name, last_name, email, phone, password, role } = req.body;
 
-      const { error, value } = updateUserSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
+      await ValidationHelpers.validateUniqueFields(email, phone, userId);
 
-      const userProfile = await UserService.findUserById(userId);
-      if (!userProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USER_NOT_FOUND,
-          code: 'USER_NOT_FOUND',
-        };
-      }
-
-      const uniqueFieldErrors = await UserService.validateUniqueFields(value.email, value.phone, userId);
-
-      if (uniqueFieldErrors.length > 0) {
-        const firstError = uniqueFieldErrors[0];
-        throw {
-          status: 409,
-          message: messages.errors[firstError.code as keyof typeof messages.errors],
-          code: firstError.code,
-        };
-      }
-
-      const updatedUser = await UserService.updateUser(userId, value);
+      const updatedUser = await UserService.updateUser(userId, req.body);
 
       logger.info(`User profile updated successfully: ${updatedUser.email}`);
 
