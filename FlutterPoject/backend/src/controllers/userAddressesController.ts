@@ -1,44 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { messages } from '../utils/messages';
-import { UserService } from '../services/UserService';
 import { UserAddressesService } from '../services/UserAddressesService';
 import { userAddressesSchema } from '../validators/userAddressesValidators';
+import { ValidationHelpers } from '../utils/validationHelpers';
 import logger from '../utils/logger';
-
-const JWT_SECRET = process.env.JWT_SECRET || '';
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined in the environment variables');
-}
 
 export class userAddressesController {
   static addAddress = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = req.user?.id;
-      if (!userId) {
-        throw {
-          status: 401,
-          message: messages.errors.UNAUTHORIZED_ACCESS,
-          code: 'UNAUTHORIZED_ACCESS',
-        };
-      }
+      const userId = ValidationHelpers.validateUserIdSmart(req);
 
-      const { error } = userAddressesSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
+      ValidationHelpers.validateSchema(userAddressesSchema, req.body);
 
-      const userProfile = await UserService.findUserById(userId);
-      if (!userProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USER_NOT_FOUND,
-          code: 'USER_NOT_FOUND',
-        };
-      }
+      const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       const { address_type, street_address, city, state, postal_code, country } = req.body;
 
@@ -56,14 +30,13 @@ export class userAddressesController {
 
       res.status(201).json({
         success: true,
-        message: 'Address added successfully',
+        message: messages.success.ADDRESS_ADDED,
         code: 'ADDRESS_ADDED',
         data: addAddress,
       });
-
-
     } catch (error) {
       next(error);
     }
   };
+  
 }
