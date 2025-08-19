@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import { messages } from '../utils/messages';
 import { updateUserSchema, registerSchema, loginSchema } from '../validators/authValidators';
-import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
 import { ValidationHelpers } from '../utils/validationHelpers';
+import { blacklistToken } from '../utils/blacklist';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import logger from '../utils/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -134,8 +135,15 @@ export class AuthController {
 
   static logout = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      logger.info(`User logged out: ${req.user?.email}`);
-
+      const token = req.headers.authorization?.split(' ')[1];
+      if (token) {
+        const decoded: any = jwt.decode(token);
+        const now = Math.floor(Date.now() / 1000);
+        const expSeconds = (decoded?.exp || now) - now;
+        if (expSeconds > 0) {
+          await blacklistToken(token, expSeconds); 
+        }
+      }
       res.status(200).json({
         success: true,
         message: messages.success.LOGOUT_SUCCESS,
