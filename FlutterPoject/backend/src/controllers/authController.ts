@@ -18,8 +18,8 @@ export class AuthController {
       ValidationHelpers.validateSchema(registerSchema, req.body);
       const { first_name, last_name = '', email, phone, password } = req.body;
 
-      ValidationHelpers.isValidEmail(email);
-      ValidationHelpers.isValidPassword(password);
+      ValidationHelpers.validateEmailFormat(email);
+      ValidationHelpers.validatePasswordFormat(password);
 
       await ValidationHelpers.validateEmailNotExists(email);
       await ValidationHelpers.validatePhoneNotExists(phone);
