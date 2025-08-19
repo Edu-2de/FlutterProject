@@ -178,10 +178,11 @@ export class AuthController {
 
       await UserService.deleteUserProfile(userId);
 
-      res.json({
+      res.status(200).json({
+        success: true,
         message: messages.success.USER_DELETED,
         code: 'USER_DELETED',
-        user: userProfile,
+        data: userProfile,
       });
     } catch (error) {
       next(error);
@@ -195,10 +196,11 @@ export class AuthController {
 
       await UserService.deleteUserProfile(userId);
 
-      res.json({
+      res.status(200).json({
+        success: true,
         message: messages.success.USER_DELETED,
         code: 'USER_DELETED',
-        user: userProfile,
+        data: userProfile,
       });
     } catch (error) {
       next(error);
