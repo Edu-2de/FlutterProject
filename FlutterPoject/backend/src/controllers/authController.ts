@@ -162,7 +162,7 @@ export class AuthController {
 
       const { first_name, last_name, email, phone, password, role } = req.body;
 
-      await ValidationHelpers.validateUniqueFields(email, phone, userId)
+      await ValidationHelpers.validateUniqueFields(email, phone, userId);
 
       const updatedUser = await UserService.updateUser(userId, req.body);
 
@@ -181,25 +181,8 @@ export class AuthController {
 
   static deleteUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = req.user?.id;
-
-      if (!userId) {
-        throw {
-          status: 401,
-          message: messages.errors.UNAUTHORIZED_ACCESS,
-          code: 'UNAUTHORIZED_ACCESS',
-        };
-      }
-
-      const userProfile = UserService.findUserById(userId);
-
-      if (!userProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USER_NOT_FOUND,
-          code: 'USER_NOT_FOUND',
-        };
-      }
+      const userId = ValidationHelpers.validateUserFromToken(req);
+      const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       UserService.deleteUserProfile(userId);
 
@@ -215,25 +198,8 @@ export class AuthController {
 
   static deleteUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = Number(req.params.userId);
-
-      if (!userId) {
-        throw {
-          status: 401,
-          message: messages.errors.UNAUTHORIZED_ACCESS,
-          code: 'UNAUTHORIZED_ACCESS',
-        };
-      }
-
-      const userProfile = UserService.findUserById(userId);
-
-      if (!userProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USER_NOT_FOUND,
-          code: 'USER_NOT_FOUND',
-        };
-      }
+      const userId = ValidationHelpers.validateUserIdFromParams(req);
+      const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       UserService.deleteUserProfile(userId);
 
