@@ -60,8 +60,29 @@ export class userAddressesController {
         code: 'ADDRESS_ADDED',
         data: addAddress,
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+  static addAddressByUserId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = Number(req.params.userId);
+      if (!userId) {
+        throw {
+          status: 401,
+          message: messages.errors.UNAUTHORIZED_ACCESS,
+          code: 'UNAUTHORIZED_ACCESS',
+        };
+      }
 
-
+      const { error } = userAddressesSchema.validate(req.body);
+      if (error) {
+        throw {
+          status: 400,
+          message: error.details[0].message,
+          code: 'VALIDATION_ERROR',
+        };
+      }
     } catch (error) {
       next(error);
     }
