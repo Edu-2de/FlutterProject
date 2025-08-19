@@ -59,7 +59,7 @@ export class ValidationHelpers {
   }
 
   static async validatePhoneNotExists(phone: string): Promise<void> {
-    const userProfile = await UserService.findUserByEmail(phone);
+    const userProfile = await UserService.findUserByPhone(phone);
     if (userProfile) {
       throw {
         status: 409,
@@ -114,6 +114,11 @@ export class ValidationHelpers {
     return passwordRegex.test(password);
   }
 
+  static isValidRole(role: string): boolean {
+    const validRoles = ['admin', 'manager', 'customer'];
+    return validRoles.includes(role.toLowerCase());
+  }
+
   // ========== Field Format Validations with Error Throwing ==========
   static validateEmailFormat(email: string): void {
     if (!this.isValidEmail(email)) {
@@ -131,6 +136,16 @@ export class ValidationHelpers {
         status: 400,
         message: messages.errors.INVALID_PASSWORD_FORMAT,
         code: 'INVALID_PASSWORD_FORMAT',
+      };
+    }
+  }
+
+  static validateRoleFormat(role: string): void {
+    if (!this.isValidRole(role)) {
+      throw {
+        status: 400,
+        message: messages.errors.INVALID_ROLE,
+        code: 'INVALID_ROLE',
       };
     }
   }

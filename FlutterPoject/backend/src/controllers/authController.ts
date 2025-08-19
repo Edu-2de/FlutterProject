@@ -136,13 +136,34 @@ export class AuthController {
     }
   };
 
-  static createUserAsAdmin = async(req: any, res: Response, next: NextFunction): Promise<void> => {
-    try{
-      
-    }catch(error){
+  static createUserAsAdmin = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      ValidationHelpers.validateSchema(registerSchema, req.body);
+      const { first_name, last_name, role, email, phone, password } = req.body;
+
+      ValidationHelpers.validateEmailFormat(email);
+      ValidationHelpers.validatePasswordFormat(password);
+
+      await ValidationHelpers.validateEmailNotExists(email);
+      await ValidationHelpers.validatePhoneNotExists(phone);
+      ValidationHelpers.validateRoleFormat(role);
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await UserService.createUser(first_name, last_name, email, phone, hashedPassword);
+
+      logger.info(`User registered successfully: ${email}`);
+
+      res.status(201).json({
+        success: true,
+        message: messages.success.USER_REGISTERED,
+        code: 'USER_REGISTERED',
+        data: { userId: newUser.id },
+      });
+    } catch (error) {
       next(error);
     }
-  }
+  };
 
   static getUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
