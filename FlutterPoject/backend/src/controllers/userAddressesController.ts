@@ -83,6 +83,36 @@ export class userAddressesController {
           code: 'VALIDATION_ERROR',
         };
       }
+
+      const userProfile = await UserService.findUserById(userId);
+      if (!userProfile) {
+        throw {
+          status: 404,
+          message: messages.errors.USER_NOT_FOUND,
+          code: 'USER_NOT_FOUND',
+        };
+      }
+
+      const { address_type, street_address, city, state, postal_code, country } = req.body;
+
+      const addAddress = await UserAddressesService.addAddress(
+        userId,
+        address_type,
+        street_address,
+        city,
+        state,
+        postal_code,
+        country
+      );
+
+      logger.info(`Address added successfully for user: ${userProfile.email}`);
+
+      res.status(201).json({
+        success: true,
+        message: 'Address added successfully',
+        code: 'ADDRESS_ADDED',
+        data: addAddress,
+      });
     } catch (error) {
       next(error);
     }
