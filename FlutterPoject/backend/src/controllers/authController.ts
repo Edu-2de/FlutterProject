@@ -121,15 +121,7 @@ export class AuthController {
 
   static getAllUsersProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const usersProfile = await UserService.getUsersProfile();
-
-      if (!usersProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USERS_NOT_FOUND,
-          code: 'USERS_NOT_FOUND',
-        };
-      }
+      const usersProfile = await ValidationHelpers.validateUsersExists();
 
       res.status(200).json({
         success: true,

@@ -41,6 +41,18 @@ export class ValidationHelpers {
     return userProfile;
   }
 
+  static async validateUsersExists() {
+    const usersProfile = await UserService.getUsersProfile();
+    if (!usersProfile) {
+      throw {
+        status: 404,
+        message: messages.errors.USER_NOT_FOUND,
+        code: 'USER_NOT_FOUND',
+      };
+    }
+    return usersProfile;
+  }
+
   static async validateEmailNotExists(email: string): Promise<void> {
     const userProfile = await UserService.findUserByEmail(email);
     if (userProfile) {
