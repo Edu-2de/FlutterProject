@@ -10,8 +10,9 @@ export class userAddressesController {
   static addAddress = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserFromToken(req);
-      
-      ValidationHelpers.validateSchema(userAddressesSchema, req.body); 
+
+      ValidationHelpers.validateSchema(userAddressesSchema, req.body);
+
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       const { address_type, street_address, city, state, postal_code, country } = req.body;
@@ -30,7 +31,7 @@ export class userAddressesController {
 
       res.status(201).json({
         success: true,
-        message: 'Address added successfully',
+        message: messages.success.ADDRESS_ADDED,
         code: 'ADDRESS_ADDED',
         data: addAddress,
       });
@@ -40,32 +41,11 @@ export class userAddressesController {
   };
   static addAddressByUserId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = Number(req.params.userId);
-      if (!userId) {
-        throw {
-          status: 401,
-          message: messages.errors.UNAUTHORIZED_ACCESS,
-          code: 'UNAUTHORIZED_ACCESS',
-        };
-      }
+      const userId = ValidationHelpers.validateUserIdFromParams(req);
 
-      const { error } = userAddressesSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
+      ValidationHelpers.validateSchema(userAddressesSchema, req.body)
 
-      const userProfile = await UserService.findUserById(userId);
-      if (!userProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USER_NOT_FOUND,
-          code: 'USER_NOT_FOUND',
-        };
-      }
+      const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       const { address_type, street_address, city, state, postal_code, country } = req.body;
 
@@ -83,7 +63,7 @@ export class userAddressesController {
 
       res.status(201).json({
         success: true,
-        message: 'Address added successfully',
+        message: messages.success.ADDRESS_ADDED,
         code: 'ADDRESS_ADDED',
         data: addAddress,
       });
