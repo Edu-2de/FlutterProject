@@ -2,6 +2,7 @@ import { messages } from './messages';
 import { UserService } from '../services/UserService';
 
 export class ValidationHelpers {
+  // ========== Token & Authentication Validations ==========
   static validateUserFromToken(req: any): number {
     const userId = req.user?.id;
     if (!userId) {
@@ -14,7 +15,6 @@ export class ValidationHelpers {
     return userId;
   }
 
- 
   static validateUserIdFromParams(req: any): number {
     const userId = Number(req.params.userId);
     if (!userId || isNaN(userId)) {
@@ -27,7 +27,7 @@ export class ValidationHelpers {
     return userId;
   }
 
-
+  // ========== Database Validations ==========
   static async validateUserExists(userId: number) {
     const userProfile = await UserService.findUserById(userId);
     if (!userProfile) {
@@ -40,7 +40,7 @@ export class ValidationHelpers {
     return userProfile;
   }
 
-
+  // ========== Schema Validations ==========
   static validateSchema(schema: any, data: any) {
     const { error } = schema.validate(data);
     if (error) {
@@ -50,5 +50,16 @@ export class ValidationHelpers {
         code: 'VALIDATION_ERROR',
       };
     }
+  }
+
+  // ========== Field Format Validations ==========
+  static isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  static isValidPassword(password: string): boolean {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    return passwordRegex.test(password);
   }
 }

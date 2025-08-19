@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { messages } from '../utils/messages';
-import { UserService } from '../services/UserService';
 import { UserAddressesService } from '../services/UserAddressesService';
 import { userAddressesSchema } from '../validators/userAddressesValidators';
 import { ValidationHelpers } from '../utils/validationHelpers';
