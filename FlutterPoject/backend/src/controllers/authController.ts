@@ -131,4 +131,18 @@ export class AuthController {
       next(error);
     }
   };
+
+  static logout = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      logger.info(`User logged out: ${req.user?.email}`);
+
+      res.status(200).json({
+        success: true,
+        message: messages.success.LOGOUT_SUCCESS,
+        code: 'LOGOUT_SUCCESS',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

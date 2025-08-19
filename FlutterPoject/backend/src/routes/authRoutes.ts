@@ -4,17 +4,27 @@ import { AuthMiddleware } from '../middlewares/authMiddleware';
 
 const router = Router();
 
+// ========== Public routes (no authentication required) ==========
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 
-router.get('/', AuthMiddleware.authenticateToken, AuthController.getUserProfile);
-router.get('/:userId', AuthMiddleware.requireAdmin, AuthController.getUserProfileById);
-router.get('/all', AuthMiddleware.requireAdmin, AuthController.getAllUsersProfile);
+// ========== Routes for logged user to access own profile ==========
+router.get('/profile', AuthMiddleware.authenticateToken, AuthController.getUserProfile);
+router.put('/profile', AuthMiddleware.authenticateToken, AuthController.updateUserProfile);
+router.delete('/profile', AuthMiddleware.authenticateToken, AuthController.deleteUserProfile);
 
-router.patch('/', AuthMiddleware.authenticateToken, AuthController.updateUserProfile);
-router.patch('/:userId', AuthMiddleware.requireAdmin, AuthController.updateUserProfileById);
+// ========== Admin only routes (access other users' profiles) ==========
+router.get('/users/:userId', AuthMiddleware.requireAdmin, AuthController.getUserProfile);
+router.put('/users/:userId', AuthMiddleware.requireAdmin, AuthController.updateUserProfile);
+router.delete('/users/:userId', AuthMiddleware.requireAdmin, AuthController.deleteUserProfile);
 
-router.delete('/', AuthMiddleware.authenticateToken, AuthController.getUserProfile);
-router.delete('/:userId', AuthMiddleware.requireAdmin, AuthController.getUserProfileById);
+// ========== Admin only routes ==========
+router.get('/users', AuthMiddleware.requireAdmin, AuthController.getAllUsers);
+router.post('/users', AuthMiddleware.requireAdmin, AuthController.createUserAsAdmin);
+
+// ========== Authenticated routes ==========
+router.post('/logout', AuthMiddleware.authenticateToken, AuthController.logout);
+router.post('/refresh-token', AuthMiddleware.authenticateToken, AuthController.refreshToken);
+router.post('/change-password', AuthMiddleware.authenticateToken, AuthController.changePassword);
 
 export default router;
