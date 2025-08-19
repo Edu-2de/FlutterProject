@@ -40,6 +40,18 @@ export class ValidationHelpers {
     return userProfile;
   }
 
+  static async validateEmailExists(email: string) {
+    const userProfile = await UserService.findUserByEmail(email);
+    if (userProfile) {
+      throw {
+        status: 409,
+        message: messages.errors.EMAIL_ALREADY_EXISTS,
+        code: 'EMAIL_ALREADY_EXISTS',
+      };
+    }
+    return userProfile;
+  }
+
   // ========== Schema Validations ==========
   static validateSchema(schema: any, data: any) {
     const { error } = schema.validate(data);
