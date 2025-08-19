@@ -5,12 +5,10 @@ import bcrypt from 'bcryptjs';
 export class ValidationHelpers {
   // ========== Token & Authentication Validations ==========
   static validateUserIdSmart(req: any): number {
-   
     const userIdFromToken = req.user?.id;
     if (userIdFromToken) {
       return userIdFromToken;
     }
-
 
     const userIdFromParams = Number(req.params.userId);
     if (userIdFromParams && !isNaN(userIdFromParams)) {

@@ -141,13 +141,31 @@ export class AuthController {
         const now = Math.floor(Date.now() / 1000);
         const expSeconds = (decoded?.exp || now) - now;
         if (expSeconds > 0) {
-          await blacklistToken(token, expSeconds); 
+          await blacklistToken(token, expSeconds);
         }
       }
       res.status(200).json({
         success: true,
         message: messages.success.LOGOUT_SUCCESS,
         code: 'LOGOUT_SUCCESS',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  static refreshToken = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = ValidationHelpers.validateUserIdSmart(req);
+      const user = await ValidationHelpers.validateUserExists(userId);
+
+      const newToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '15m' });
+
+      res.status(200).json({
+        success: true,
+        message: 'Token refreshed successfully',
+        code: 'TOKEN_REFRESHED',
+        data: { token: newToken },
       });
     } catch (error) {
       next(error);
