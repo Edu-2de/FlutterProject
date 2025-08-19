@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { messages } from '../utils/messages';
 import { updateUserSchema, registerSchema, loginSchema } from '../validators/authValidators';
-import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
 import { ValidationHelpers } from '../utils/validationHelpers';
@@ -51,7 +50,7 @@ export class AuthController {
 
       const user = await ValidationHelpers.validateEmailExists(email);
 
-      ValidationHelpers.validateIfCorrectPassword(user.id, password)
+      ValidationHelpers.validateIfCorrectPassword(user.id, password);
 
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
         expiresIn: '15m',
@@ -80,7 +79,7 @@ export class AuthController {
 
   static getUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = ValidationHelpers.validateUserFromToken(req)
+      const userId = ValidationHelpers.validateUserFromToken(req);
 
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
@@ -97,17 +96,9 @@ export class AuthController {
 
   static getUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = Number(req.params.userId);
+      const userId = ValidationHelpers.validateUserIdFromParams(req);
 
-      if (!userId) {
-        throw {
-          status: 401,
-          message: messages.errors.UNAUTHORIZED_ACCESS,
-          code: 'UNAUTHORIZED_ACCESS',
-        };
-      }
-
-      const userProfile = await UserService.findUserById(userId);
+      const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       if (!userProfile) {
         throw {
