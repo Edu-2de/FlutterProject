@@ -171,4 +171,27 @@ export class AuthController {
       next(error);
     }
   };
+
+  static verifyToken = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = ValidationHelpers.validateUserIdSmart(req);
+      const user = await ValidationHelpers.validateUserExists(userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Token is valid',
+        code: 'TOKEN_VALID',
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.first_name,
+            role: user.role,
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
