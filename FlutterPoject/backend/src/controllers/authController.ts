@@ -6,7 +6,7 @@ import { updateUserSchema, registerSchema, loginSchema } from '../validators/aut
 import { User } from '../interfaces/UserInterfaces';
 import logger from '../utils/logger';
 import { UserService } from '../services/UserService';
-import { isValidEmail, isValidPassword } from '../utils/validators';
+import { ValidationHelpers } from '../utils/validationHelpers';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 if (!JWT_SECRET) {
@@ -27,21 +27,8 @@ export class AuthController {
 
       const { first_name, last_name = '', email, phone, password } = req.body;
 
-      if (!isValidEmail(email)) {
-        throw {
-          status: 400,
-          message: messages.errors.INVALID_EMAIL_FORMAT,
-          code: 'INVALID_EMAIL_FORMAT',
-        };
-      }
-
-      if (!isValidPassword(password)) {
-        throw {
-          status: 400,
-          message: messages.errors.INVALID_PASSWORD_FORMAT,
-          code: 'INVALID_PASSWORD_FORMAT',
-        };
-      }
+      ValidationHelpers.isValidEmail(email)
+      ValidationHelpers.isValidPassword(password)
 
       const checkEmail = await UserService.findUserByEmail(email);
       if (checkEmail) {

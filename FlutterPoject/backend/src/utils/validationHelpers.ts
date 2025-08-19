@@ -62,4 +62,25 @@ export class ValidationHelpers {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
     return passwordRegex.test(password);
   }
+
+  // ========== Field Format Validations with Error Throwing ==========
+  static validateEmailFormat(email: string): void {
+    if (!this.isValidEmail(email)) {
+      throw {
+        status: 400,
+        message: messages.errors.INVALID_EMAIL_FORMAT,
+        code: 'INVALID_EMAIL_FORMAT',
+      };
+    }
+  }
+
+  static validatePasswordFormat(password: string): void {
+    if (!this.isValidPassword(password)) {
+      throw {
+        status: 400,
+        message: messages.errors.INVALID_PASSWORD_FORMAT,
+        code: 'INVALID_PASSWORD_FORMAT',
+      };
+    }
+  }
 }
