@@ -75,7 +75,7 @@ export class AuthController {
 
   static getUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = ValidationHelpers.validateUserFromToken(req);
+      const userId = ValidationHelpers.validateUserIdSmart(req);
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       res.status(200).json({
@@ -83,37 +83,6 @@ export class AuthController {
         message: messages.success.PROFILE_FETCHED,
         code: 'PROFILE_FETCHED',
         data: userProfile,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  static getUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = ValidationHelpers.validateUserIdFromParams(req);
-      const userProfile = await ValidationHelpers.validateUserExists(userId);
-
-      res.status(200).json({
-        success: true,
-        message: messages.success.PROFILE_FETCHED,
-        code: 'PROFILE_FETCHED',
-        data: userProfile,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  static getAllUsersProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const usersProfile = await ValidationHelpers.validateUsersExists();
-
-      res.status(200).json({
-        success: true,
-        message: messages.success.PROFILES_FETCHED,
-        code: 'PROFILES_FETCHED',
-        data: usersProfile,
       });
     } catch (error) {
       next(error);
@@ -122,7 +91,7 @@ export class AuthController {
 
   static updateUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = ValidationHelpers.validateUserFromToken(req);
+      const userId = ValidationHelpers.validateUserIdSmart(req);
       ValidationHelpers.validateSchema(updateUserSchema, req.body);
       await ValidationHelpers.validateUserExists(userId);
 
@@ -145,52 +114,9 @@ export class AuthController {
     }
   };
 
-  static updateUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = ValidationHelpers.validateUserIdFromParams(req);
-      ValidationHelpers.validateSchema(updateUserSchema, req.body);
-      await ValidationHelpers.validateUserExists(userId);
-
-      const { first_name, last_name, email, phone, password, role } = req.body;
-
-      await ValidationHelpers.validateUniqueFields(email, phone, userId);
-
-      const updatedUser = await UserService.updateUser(userId, req.body);
-
-      logger.info(`User profile updated by admin: ${updatedUser.email}`);
-
-      res.status(200).json({
-        success: true,
-        message: messages.success.USER_UPDATED,
-        code: 'USER_UPDATED',
-        data: updatedUser,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
   static deleteUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = ValidationHelpers.validateUserFromToken(req);
-      const userProfile = await ValidationHelpers.validateUserExists(userId);
-
-      await UserService.deleteUserProfile(userId);
-
-      res.status(200).json({
-        success: true,
-        message: messages.success.USER_DELETED,
-        code: 'USER_DELETED',
-        data: userProfile,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  static deleteUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId = ValidationHelpers.validateUserIdFromParams(req);
+      const userId = ValidationHelpers.validateUserIdSmart(req);
       const userProfile = await ValidationHelpers.validateUserExists(userId);
 
       await UserService.deleteUserProfile(userId);
