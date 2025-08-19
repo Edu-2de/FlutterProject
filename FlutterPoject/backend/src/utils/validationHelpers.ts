@@ -68,8 +68,8 @@ export class ValidationHelpers {
     if (userProfile) {
       throw {
         status: 409,
-        message: messages.errors.EMAIL_ALREADY_EXISTS,
-        code: 'EMAIL_ALREADY_EXISTS',
+        message: messages.errors.PHONE_ALREADY_EXISTS,
+        code: 'PHONE_ALREADY_EXISTS',
       };
     }
   }

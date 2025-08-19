@@ -24,7 +24,7 @@ export class AuthController {
       ValidationHelpers.isValidPassword(password);
 
       await ValidationHelpers.validateEmailNotExists(email);
-      await ValidationHelpers.validatePhoneNotExists(email);
+      await ValidationHelpers.validatePhoneNotExists(phone);
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
