@@ -36,9 +36,7 @@ export class AuthController {
         success: true,
         message: messages.success.USER_REGISTERED,
         code: 'USER_REGISTERED',
-        data: {
-          userId: newUser.id,
-        },
+        data: { userId: newUser.id },
       });
     } catch (error) {
       next(error);
@@ -47,36 +45,13 @@ export class AuthController {
 
   static login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { error } = loginSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
+      ValidationHelpers.validateSchema(loginSchema, req.body);
 
       const { email, password } = req.body;
 
-      const checkEmail = await UserService.findUserByEmail(email);
-      if (!checkEmail) {
-        throw {
-          status: 401,
-          message: messages.errors.INVALID_CREDENTIALS,
-          code: 'INVALID_CREDENTIALS',
-        };
-      }
+      const user = await ValidationHelpers.validateEmailExists(email);
 
-      const user: User = checkEmail.rows[0];
-
-      const isPasswordCorrect = await bcrypt.compare(password, user.password);
-      if (!isPasswordCorrect) {
-        throw {
-          status: 401,
-          message: messages.errors.INVALID_CREDENTIALS,
-          code: 'INVALID_CREDENTIALS',
-        };
-      }
+      ValidationHelpers.validateIfCorrectPassword(user.id, password)
 
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
         expiresIn: '15m',

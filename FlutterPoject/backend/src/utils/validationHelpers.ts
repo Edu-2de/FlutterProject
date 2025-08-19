@@ -1,5 +1,6 @@
 import { messages } from './messages';
 import { UserService } from '../services/UserService';
+import bcrypt from 'bcryptjs';
 
 export class ValidationHelpers {
   // ========== Token & Authentication Validations ==========
@@ -70,6 +71,19 @@ export class ValidationHelpers {
         status: 409,
         message: messages.errors.PHONE_ALREADY_EXISTS,
         code: 'PHONE_ALREADY_EXISTS',
+      };
+    }
+  }
+
+  static async validateIfCorrectPassword(userId: number, password: string) {
+    const userProfile = await UserService.findUserById(userId);
+
+    const isPasswordCorrect = await bcrypt.compare(password, userProfile.password);
+    if (!isPasswordCorrect) {
+      throw {
+        status: 401,
+        message: messages.errors.INVALID_CREDENTIALS,
+        code: 'INVALID_CREDENTIALS',
       };
     }
   }
