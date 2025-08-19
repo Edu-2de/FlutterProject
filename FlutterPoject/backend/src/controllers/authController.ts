@@ -133,7 +133,7 @@ export class AuthController {
     try {
       const userId = ValidationHelpers.validateUserFromToken(req);
       ValidationHelpers.validateSchema(updateUserSchema, req);
-      const userProfile = await ValidationHelpers.validateUserExists(userId);
+      await ValidationHelpers.validateUserExists(userId);
 
       const { first_name, last_name, email, phone, password, role } = req.body;
 
@@ -156,46 +156,15 @@ export class AuthController {
 
   static updateUserProfileById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = Number(req.params.userId);
+      const userId = ValidationHelpers.validateUserIdFromParams(req);
+      ValidationHelpers.validateSchema(updateUserSchema, req);
+      await ValidationHelpers.validateUserExists(userId);
 
-      if (!userId) {
-        throw {
-          status: 400,
-          message: messages.errors.INVALID_USER_ID,
-          code: 'INVALID_USER_ID',
-        };
-      }
+      const { first_name, last_name, email, phone, password, role } = req.body;
 
-      const { error, value } = updateUserSchema.validate(req.body);
-      if (error) {
-        throw {
-          status: 400,
-          message: error.details[0].message,
-          code: 'VALIDATION_ERROR',
-        };
-      }
+      await ValidationHelpers.validateUniqueFields(email, phone, userId)
 
-      const userProfile = await UserService.findUserById(userId);
-      if (!userProfile) {
-        throw {
-          status: 404,
-          message: messages.errors.USER_NOT_FOUND,
-          code: 'USER_NOT_FOUND',
-        };
-      }
-
-      const uniqueFieldErrors = await UserService.validateUniqueFields(value.email, value.phone, userId);
-
-      if (uniqueFieldErrors.length > 0) {
-        const firstError = uniqueFieldErrors[0];
-        throw {
-          status: 409,
-          message: messages.errors[firstError.code as keyof typeof messages.errors],
-          code: firstError.code,
-        };
-      }
-
-      const updatedUser = await UserService.updateUser(userId, value);
+      const updatedUser = await UserService.updateUser(userId, req.body);
 
       logger.info(`User profile updated by admin: ${updatedUser.email}`);
 
