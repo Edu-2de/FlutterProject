@@ -39,4 +39,4 @@ export const updateAddressSchema = Joi.object({
   state: Joi.string().min(2).max(100).optional(),
   postal_code: Joi.string().min(5).max(20).optional(),
   country: Joi.string().min(2).max(100).optional(),
-}).min(1); // Pelo menos um campo deve ser fornecido para atualização
+}).min(1);

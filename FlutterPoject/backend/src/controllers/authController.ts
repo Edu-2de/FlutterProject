@@ -136,6 +136,14 @@ export class AuthController {
     }
   };
 
+  static createUserAsAdmin = async(req: any, res: Response, next: NextFunction): Promise<void> => {
+    try{
+      
+    }catch(error){
+      next(error);
+    }
+  }
+
   static getUserProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = ValidationHelpers.validateUserIdSmart(req);
